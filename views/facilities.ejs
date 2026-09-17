@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Infrastructures - SportConnect Pro</title>
+</head>
+
+<body>
+
+    <h1>Infrastructures sportives</h1>
+
+    <ul>
+
+        <% facilities.forEach(facility => { %>
+
+            <li>
+                <strong><%= facility.name %></strong>
+                - <%= facility.type %>
+                - Capacité ERP : <%= facility.erp_capacity %>
+            </li>
+
+        <% }); %>
+
+    </ul>
+
+</body>
+
+</html>
