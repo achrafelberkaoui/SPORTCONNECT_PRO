@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <title>Infrastructures - SportConnect Pro</title>
 </head>
-
 <body>
 
     <h1>Infrastructures sportives</h1>
@@ -15,14 +13,154 @@
         <% facilities.forEach(facility => { %>
 
             <li>
-                <strong><%= facility.name %></strong>
-                - <%= facility.type %>
-                - Capacité ERP : <%= facility.erp_capacity %>
+
+                <strong>
+                    <%= facility.name %>
+                </strong>
+
+                -
+                <%= facility.type %>
+
+                -
+                Capacité ERP :
+                <%= facility.erp_capacity %>
+
+
+                <!-- UPDATE -->
+
+                <h3>Modifier cette infrastructure</h3>
+
+                <form method="POST" action="/facilities/update">
+
+                    <input
+                        type="hidden"
+                        name="id"
+                        value="<%= facility.id %>"
+                    >
+
+                    <div>
+                        <label for="name-<%= facility.id %>">
+                            Nom :
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name-<%= facility.id %>"
+                            name="name"
+                            value="<%= facility.name %>"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="type-<%= facility.id %>">
+                            Type :
+                        </label>
+
+                        <input
+                            type="text"
+                            id="type-<%= facility.id %>"
+                            name="type"
+                            value="<%= facility.type %>"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="capacity-<%= facility.id %>">
+                            Capacité ERP :
+                        </label>
+
+                        <input
+                            type="number"
+                            id="capacity-<%= facility.id %>"
+                            name="erp_capacity"
+                            value="<%= facility.erp_capacity %>"
+                            min="1"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit">
+                        Modifier
+                    </button>
+
+                </form>
+                
+                <form method="POST" action="/facilities/delete">
+                
+                    <input
+                        type="hidden"
+                        name="id"
+                        value="<%= facility.id %>"
+                    >
+                
+                    <button type="submit">
+                        Supprimer
+                    </button>
+                
+                </form>
+
+                <hr>
+
             </li>
 
         <% }); %>
 
     </ul>
+
+
+    <!-- CREATE -->
+
+    <h2>Ajouter une infrastructure</h2>
+
+    <form method="POST" action="/facilities">
+
+        <div>
+            <label for="new-name">
+                Nom :
+            </label>
+
+            <input
+                type="text"
+                id="new-name"
+                name="name"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="new-type">
+                Type :
+            </label>
+
+            <input
+                type="text"
+                id="new-type"
+                name="type"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="new-capacity">
+                Capacité ERP :
+            </label>
+
+            <input
+                type="number"
+                id="new-capacity"
+                name="erp_capacity"
+                min="1"
+                required
+            >
+        </div>
+
+        <button type="submit">
+            Ajouter
+        </button>
+
+    </form>
 
 </body>
 

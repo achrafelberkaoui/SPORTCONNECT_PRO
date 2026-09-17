@@ -1,10 +1,9 @@
 const router = require('find-my-way')();
-const render = require('./utils/renderer');
-const facilityService = require('./services/facilityService');
 
-router.on('GET', '/', (req, res)=>{
-    render(res, 'home',{ name: 'achraf'});
-});
+const homeController = require('./controllers/homeController');
+const facilityController = require('./controllers/facilityController');
+
+router.on('GET', '/', homeController.index);
 
 router.on('GET', '/activities', (req, res) => {
     res.statusCode = 200;
@@ -12,26 +11,14 @@ router.on('GET', '/activities', (req, res) => {
     res.end('Liste des activites');
 });
 
-router.on('GET', '/facilities', async (req, res) => {
-
-    try {
-     const facilities = await facilityService.getAllFacilities();
-        render(res, 'facilities', {
-            facilities
-        });
-    }catch(error){
-        console.error(error);
-        res.statusCode = 500;
-        res.end('Erreur serveur');
-    }
-});
-
+router.on('GET', '/facilities', facilityController.index);
+router.on('POST', '/facilities', facilityController.create);
+router.on('POST', '/facilities/update', facilityController.update);
+router.on('POST', '/facilities/delete', facilityController.remove);
 router.on('POST', '/test', (req, res) => {
-    console.log(req.body);
-
-    res.statusCode = 302;
+    res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
-    res.end(`bonjour ${req.body.name}`);
+    res.end(`bonjour ${req.body.name}` );
 });
 
 module.exports = router;
