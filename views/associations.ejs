@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Associations - SportConnect Pro</title>
+</head>
+
+<body>
+
+    <h1>Associations sportives</h1>
+
+    <ul>
+
+        <% associations.forEach(association => { %>
+
+            <li>
+
+                <strong>
+                    <%= association.name %>
+                </strong>
+
+                <p>
+                    <%= association.description || 'Aucune description' %>
+                </p>
+
+                <h3>Modifier cette association</h3>
+
+                <form method="POST" action="/associations/update">
+
+                    <input
+                        type="hidden"
+                        name="id"
+                        value="<%= association.id %>"
+                    >
+
+                    <div>
+                        <label for="name-<%= association.id %>">
+                            Nom :
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name-<%= association.id %>"
+                            name="name"
+                            value="<%= association.name %>"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="description-<%= association.id %>">
+                            Description :
+                        </label>
+
+                        <textarea
+                            id="description-<%= association.id %>"
+                            name="description"
+                        ><%= association.description || '' %></textarea>
+                    </div>
+
+                    <button type="submit">
+                        Modifier
+                    </button>
+
+                </form>
+
+                <form
+                    method="POST"
+                    action="/associations/delete"
+                >
+
+                    <input
+                        type="hidden"
+                        name="id"
+                        value="<%= association.id %>"
+                    >
+
+                    <button type="submit">
+                        Supprimer
+                    </button>
+
+                </form>
+
+                <hr>
+
+            </li>
+
+        <% }); %>
+
+    </ul>
+
+
+    <h2>Ajouter une association</h2>
+
+    <form method="POST" action="/associations">
+
+        <div>
+            <label for="new-name">
+                Nom :
+            </label>
+
+            <input
+                type="text"
+                id="new-name"
+                name="name"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="new-description">
+                Description :
+            </label>
+
+            <textarea
+                id="new-description"
+                name="description"
+            ></textarea>
+        </div>
+
+        <button type="submit">
+            Ajouter
+        </button>
+
+    </form>
+
+</body>
+
+</html>
