@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Membres - SportConnect Pro</title>
+</head>
+
+<body>
+
+    <h1>Membres</h1>
+
+    <% if (members.length === 0) { %>
+        <p>Aucun membre enregistré.</p>
+    <% } %>
+
+    <% members.forEach(member => { %>
+
+        <article>
+
+            <h2>
+                <%= member.first_name %>
+                <%= member.last_name %>
+            </h2>
+
+            <p>
+                Date de naissance :
+                <%= member.date_of_birth %>
+            </p>
+
+            <p>
+                Résident :
+                <%= member.is_resident ? 'Oui' : 'Non' %>
+            </p>
+
+            <p>
+                Famille :
+                <%= member.family_name || 'Aucune' %>
+            </p>
+
+            <p>
+                Certificat médical :
+                <%= member.medical_certificate_date || 'Non renseigné' %>
+            </p>
+
+            <p>
+                Pass'Sport :
+                <%= member.pass_sport_code || 'Aucun' %>
+            </p>
+
+            <hr>
+
+            <h3>Modifier</h3>
+
+            <form method="POST" action="/members/update">
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<%= member.id %>"
+                >
+
+                <div>
+                    <label>
+                        Prénom :
+                        <input
+                            type="text"
+                            name="first_name"
+                            value="<%= member.first_name %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Nom :
+                        <input
+                            type="text"
+                            name="last_name"
+                            value="<%= member.last_name %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Date de naissance :
+                        <input
+                            type="date"
+                            name="date_of_birth"
+                            value="<%= member.date_of_birth instanceof Date
+                                ? member.date_of_birth.toISOString().slice(0, 10)
+                                : member.date_of_birth %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Résident :
+                        <input
+                            type="checkbox"
+                            name="is_resident"
+                            <%= member.is_resident ? 'checked' : '' %>
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Famille :
+                        <select name="family_id">
+
+                            <option value="">
+                                Aucune
+                            </option>
+
+                            <% families.forEach(family => { %>
+
+                                <option
+                                    value="<%= family.id %>"
+                                    <%= Number(member.family_id) === Number(family.id)
+                                        ? 'selected'
+                                        : '' %>
+                                >
+                                    <%= family.family_name %>
+                                </option>
+
+                            <% }); %>
+
+                        </select>
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Date certificat médical :
+                        <input
+                            type="date"
+                            name="medical_certificate_date"
+                            value="<%= member.medical_certificate_date || '' %>"
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Code Pass'Sport :
+                        <input
+                            type="text"
+                            name="pass_sport_code"
+                            value="<%= member.pass_sport_code || '' %>"
+                        >
+                    </label>
+                </div>
+
+                <button type="submit">
+                    Modifier
+                </button>
+
+            </form>
+
+            <form method="POST" action="/members/delete">
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<%= member.id %>"
+                >
+
+                <button type="submit">
+                    Supprimer
+                </button>
+
+            </form>
+
+            <hr>
+
+        </article>
+
+    <% }); %>
+
+
+    <h2>Ajouter un membre</h2>
+
+    <form method="POST" action="/members">
+
+        <div>
+            <label>
+                Prénom :
+                <input
+                    type="text"
+                    name="first_name"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Nom :
+                <input
+                    type="text"
+                    name="last_name"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Date de naissance :
+                <input
+                    type="date"
+                    name="date_of_birth"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Résident :
+                <input
+                    type="checkbox"
+                    name="is_resident"
+                    checked
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Famille :
+
+                <select name="family_id">
+
+                    <option value="">
+                        Aucune
+                    </option>
+
+                    <% families.forEach(family => { %>
+
+                        <option value="<%= family.id %>">
+                            <%= family.family_name %>
+                        </option>
+
+                    <% }); %>
+
+                </select>
+
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Date certificat médical :
+                <input
+                    type="date"
+                    name="medical_certificate_date"
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Code Pass'Sport :
+                <input
+                    type="text"
+                    name="pass_sport_code"
+                >
+            </label>
+        </div>
+
+        <button type="submit">
+            Ajouter
+        </button>
+
+    </form>
+
+</body>
+</html>

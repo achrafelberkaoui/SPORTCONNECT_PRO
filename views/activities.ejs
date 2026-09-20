@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Activités - SportConnect Pro</title>
+</head>
+
+<body>
+
+    <h1>Activités sportives</h1>
+
+    <% if (activities.length === 0) { %>
+
+        <p>Aucune activité enregistrée.</p>
+
+    <% } %>
+
+
+    <% activities.forEach(activity => { %>
+
+        <article>
+
+            <h2>
+                <%= activity.name %>
+            </h2>
+
+            <p>
+                Prix :
+                <%= activity.base_price %> €
+            </p>
+
+            <p>
+                Capacité :
+                <%= activity.max_capacity %>
+            </p>
+
+            <p>
+                Date :
+                <%= activity.activity_date %>
+            </p>
+
+            <p>
+                Horaire :
+                <%= activity.start_time %>
+                -
+                <%= activity.end_time %>
+            </p>
+
+            <p>
+                Association :
+                <%= activity.association_name %>
+            </p>
+
+            <p>
+                Infrastructure :
+                <%= activity.facility_name %>
+            </p>
+
+            <p>
+                Âge :
+                <%= activity.min_age %>
+                -
+                <%= activity.max_age %> ans
+            </p>
+
+            <p>
+                Tous publics :
+                <%= activity.all_publics ? 'Oui' : 'Non' %>
+            </p>
+
+
+            <h3>Modifier</h3>
+
+            <form method="POST" action="/activities/update">
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<%= activity.id %>"
+                >
+
+                <div>
+                    <label>
+                        Nom :
+                        <input
+                            type="text"
+                            name="name"
+                            value="<%= activity.name %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Prix :
+                        <input
+                            type="number"
+                            name="base_price"
+                            value="<%= activity.base_price %>"
+                            min="0"
+                            step="0.01"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Capacité :
+                        <input
+                            type="number"
+                            name="max_capacity"
+                            value="<%= activity.max_capacity %>"
+                            min="1"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Date :
+                        <input
+                            type="date"
+                            name="activity_date"
+                            value="<%= activity.activity_date.toISOString
+                                ? activity.activity_date.toISOString().slice(0, 10)
+                                : activity.activity_date %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Début :
+                        <input
+                            type="time"
+                            name="start_time"
+                            value="<%= activity.start_time %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Fin :
+                        <input
+                            type="time"
+                            name="end_time"
+                            value="<%= activity.end_time %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Âge minimum :
+                        <input
+                            type="number"
+                            name="min_age"
+                            value="<%= activity.min_age %>"
+                            min="0"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Âge maximum :
+                        <input
+                            type="number"
+                            name="max_age"
+                            value="<%= activity.max_age %>"
+                            min="0"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Association :
+
+                        <select
+                            name="association_id"
+                            required
+                        >
+
+                            <% associations.forEach(association => { %>
+
+                                <option
+                                    value="<%= association.id %>"
+                                    <%= Number(activity.association_id) === Number(association.id) ? 'selected' : '' %>
+                                >
+                                    <%= association.name %>
+                                </option>
+
+                            <% }); %>
+
+                        </select>
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Infrastructure :
+
+                        <select
+                            name="facility_id"
+                            required
+                        >
+
+                            <% facilities.forEach(facility => { %>
+
+                                <option
+                                    value="<%= facility.id %>"
+                                    <%= Number(activity.facility_id) === Number(facility.id) ? 'selected' : '' %>
+                                >
+                                    <%= facility.name %>
+                                    (ERP : <%= facility.erp_capacity %>)
+                                </option>
+
+                            <% }); %>
+
+                        </select>
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="all_publics"
+                            <%= activity.all_publics ? 'checked' : '' %>
+                        >
+                        Tous publics
+                    </label>
+                </div>
+
+                <button type="submit">
+                    Modifier
+                </button>
+
+            </form>
+
+
+            <form
+                method="POST"
+                action="/activities/delete"
+            >
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<%= activity.id %>"
+                >
+
+                <button type="submit">
+                    Supprimer
+                </button>
+
+            </form>
+
+            <hr>
+
+        </article>
+
+    <% }); %>
+
+
+    <h2>Ajouter une activité</h2>
+
+    <form method="POST" action="/activities">
+
+        <div>
+            <label>
+                Nom :
+                <input
+                    type="text"
+                    name="name"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Prix :
+                <input
+                    type="number"
+                    name="base_price"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Capacité :
+                <input
+                    type="number"
+                    name="max_capacity"
+                    min="1"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Date :
+                <input
+                    type="date"
+                    name="activity_date"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Début :
+                <input
+                    type="time"
+                    name="start_time"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Fin :
+                <input
+                    type="time"
+                    name="end_time"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Âge minimum :
+                <input
+                    type="number"
+                    name="min_age"
+                    min="0"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Âge maximum :
+                <input
+                    type="number"
+                    name="max_age"
+                    min="0"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Association :
+
+                <select name="association_id" required>
+
+                    <% associations.forEach(association => { %>
+
+                        <option value="<%= association.id %>">
+                            <%= association.name %>
+                        </option>
+
+                    <% }); %>
+
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Infrastructure :
+
+                <select name="facility_id" required>
+
+                    <% facilities.forEach(facility => { %>
+
+                        <option value="<%= facility.id %>">
+                            <%= facility.name %>
+                            (ERP : <%= facility.erp_capacity %>)
+                        </option>
+
+                    <% }); %>
+
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>
+                <input
+                    type="checkbox"
+                    name="all_publics"
+                >
+                Tous publics
+            </label>
+        </div>
+
+        <button type="submit">
+            Ajouter
+        </button>
+
+    </form>
+
+</body>
+
+</html>
