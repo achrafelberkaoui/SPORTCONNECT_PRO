@@ -22,33 +22,10 @@ async function index(req, res) {
 
 async function create(req, res) {
     try {
-        const {
-            name,
-            base_price,
-            max_capacity,
-            activity_date,
-            start_time,
-            end_time,
-            min_age,
-            max_age,
-            all_publics,
-            association_id,
-            facility_id
-        } = req.body;
+        const {name,base_price,max_capacity,activity_date,start_time,end_time,min_age,max_age,all_publics,association_id,facility_id} = req.body;
 
-        await activityService.createActivity(
-            name,
-            Number(base_price),
-            Number(max_capacity),
-            activity_date,
-            start_time,
-            end_time,
-            Number(min_age),
-            Number(max_age),
-            all_publics === 'on',
-            Number(association_id),
-            Number(facility_id)
-        );
+        await activityService.createActivity(name,Number(base_price),Number(max_capacity),activity_date,start_time,end_time,Number(min_age)
+        ,Number(max_age),all_publics === 'on',Number(association_id),Number(facility_id));
 
         res.statusCode = 302;
         res.setHeader('Location', '/activities');

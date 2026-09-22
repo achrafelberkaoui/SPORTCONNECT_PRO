@@ -1,429 +1,665 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Activités - SportConnect Pro</title>
-</head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Activités sportives — SportConnect Pro</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/activities.css">
+</head>
 <body>
 
-    <h1>Activités sportives</h1>
-
-    <% if (activities.length === 0) { %>
-
-        <p>Aucune activité enregistrée.</p>
-
-    <% } %>
-
-
-    <% activities.forEach(activity => { %>
-
-        <article>
-
-            <h2>
-                <%= activity.name %>
-            </h2>
-
-            <p>
-                Prix :
-                <%= activity.base_price %> €
-            </p>
-
-            <p>
-                Capacité :
-                <%= activity.max_capacity %>
-            </p>
-
-            <p>
-                Date :
-                <%= activity.activity_date %>
-            </p>
-
-            <p>
-                Horaire :
-                <%= activity.start_time %>
-                -
-                <%= activity.end_time %>
-            </p>
-
-            <p>
-                Association :
-                <%= activity.association_name %>
-            </p>
-
-            <p>
-                Infrastructure :
-                <%= activity.facility_name %>
-            </p>
-
-            <p>
-                Âge :
-                <%= activity.min_age %>
-                -
-                <%= activity.max_age %> ans
-            </p>
-
-            <p>
-                Tous publics :
-                <%= activity.all_publics ? 'Oui' : 'Non' %>
-            </p>
-
-
-            <h3>Modifier</h3>
-
-            <form method="POST" action="/activities/update">
-
-                <input
-                    type="hidden"
-                    name="id"
-                    value="<%= activity.id %>"
-                >
-
-                <div>
-                    <label>
-                        Nom :
-                        <input
-                            type="text"
-                            name="name"
-                            value="<%= activity.name %>"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Prix :
-                        <input
-                            type="number"
-                            name="base_price"
-                            value="<%= activity.base_price %>"
-                            min="0"
-                            step="0.01"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Capacité :
-                        <input
-                            type="number"
-                            name="max_capacity"
-                            value="<%= activity.max_capacity %>"
-                            min="1"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Date :
-                        <input
-                            type="date"
-                            name="activity_date"
-                            value="<%= activity.activity_date.toISOString
-                                ? activity.activity_date.toISOString().slice(0, 10)
-                                : activity.activity_date %>"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Début :
-                        <input
-                            type="time"
-                            name="start_time"
-                            value="<%= activity.start_time %>"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Fin :
-                        <input
-                            type="time"
-                            name="end_time"
-                            value="<%= activity.end_time %>"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Âge minimum :
-                        <input
-                            type="number"
-                            name="min_age"
-                            value="<%= activity.min_age %>"
-                            min="0"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Âge maximum :
-                        <input
-                            type="number"
-                            name="max_age"
-                            value="<%= activity.max_age %>"
-                            min="0"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Association :
-
-                        <select
-                            name="association_id"
-                            required
-                        >
-
-                            <% associations.forEach(association => { %>
-
-                                <option
-                                    value="<%= association.id %>"
-                                    <%= Number(activity.association_id) === Number(association.id) ? 'selected' : '' %>
-                                >
-                                    <%= association.name %>
-                                </option>
-
-                            <% }); %>
-
-                        </select>
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Infrastructure :
-
-                        <select
-                            name="facility_id"
-                            required
-                        >
-
-                            <% facilities.forEach(facility => { %>
-
-                                <option
-                                    value="<%= facility.id %>"
-                                    <%= Number(activity.facility_id) === Number(facility.id) ? 'selected' : '' %>
-                                >
-                                    <%= facility.name %>
-                                    (ERP : <%= facility.erp_capacity %>)
-                                </option>
-
-                            <% }); %>
-
-                        </select>
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        <input
-                            type="checkbox"
-                            name="all_publics"
-                            <%= activity.all_publics ? 'checked' : '' %>
-                        >
-                        Tous publics
-                    </label>
-                </div>
-
-                <button type="submit">
-                    Modifier
-                </button>
-
-            </form>
-
-
-            <form
-                method="POST"
-                action="/activities/delete"
-            >
-
-                <input
-                    type="hidden"
-                    name="id"
-                    value="<%= activity.id %>"
-                >
-
-                <button type="submit">
-                    Supprimer
-                </button>
-
-            </form>
-
-            <hr>
-
-        </article>
-
-    <% }); %>
-
-
-    <h2>Ajouter une activité</h2>
-
-    <form method="POST" action="/activities">
-
-        <div>
-            <label>
-                Nom :
-                <input
-                    type="text"
-                    name="name"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Prix :
-                <input
-                    type="number"
-                    name="base_price"
-                    min="0"
-                    step="0.01"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Capacité :
-                <input
-                    type="number"
-                    name="max_capacity"
-                    min="1"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Date :
-                <input
-                    type="date"
-                    name="activity_date"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Début :
-                <input
-                    type="time"
-                    name="start_time"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Fin :
-                <input
-                    type="time"
-                    name="end_time"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Âge minimum :
-                <input
-                    type="number"
-                    name="min_age"
-                    min="0"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Âge maximum :
-                <input
-                    type="number"
-                    name="max_age"
-                    min="0"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Association :
-
-                <select name="association_id" required>
-
-                    <% associations.forEach(association => { %>
-
-                        <option value="<%= association.id %>">
-                            <%= association.name %>
-                        </option>
-
-                    <% }); %>
-
-                </select>
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Infrastructure :
-
-                <select name="facility_id" required>
-
-                    <% facilities.forEach(facility => { %>
-
-                        <option value="<%= facility.id %>">
-                            <%= facility.name %>
-                            (ERP : <%= facility.erp_capacity %>)
-                        </option>
-
-                    <% }); %>
-
-                </select>
-            </label>
-        </div>
-
-        <div>
-            <label>
-                <input
-                    type="checkbox"
-                    name="all_publics"
-                >
-                Tous publics
-            </label>
-        </div>
-
-        <button type="submit">
-            Ajouter
+<%
+/* --------------------------------------------------------------
+   Variables fournies par activityController.index :
+     activities, associations, facilities
+   Aucune autre variable n'est utilisée.
+   Les fonctions ci-dessous ne font que du formatage d'affichage.
+-------------------------------------------------------------- */
+
+const toDate = (d) => {
+  if (!d) return null;
+  const x = (d instanceof Date) ? d : new Date(d);
+  return isNaN(x.getTime()) ? null : x;
+};
+const pad = (n) => ('0' + n).slice(-2);
+
+// 20/09/2026
+const fmtDate = (d) => {
+  const x = toDate(d);
+  return x ? pad(x.getDate()) + '/' + pad(x.getMonth() + 1) + '/' + x.getFullYear() : '—';
+};
+// 2026-09-20 (valeur d'un <input type="date">)
+const isoDate = (d) => {
+  const x = toDate(d);
+  return x ? x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate()) : '';
+};
+// "18:00:00" -> "18:00"
+const fmtTime = (t) => t ? String(t).slice(0, 5) : '—';
+
+const isToday = (d) => {
+  const x = toDate(d);
+  if (!x) return false;
+  const n = new Date();
+  return x.getFullYear() === n.getFullYear() && x.getMonth() === n.getMonth() && x.getDate() === n.getDate();
+};
+
+const fmtPrice = (p) => (p === null || p === undefined || p === '') ? '—' : Number(p).toFixed(2) + ' €';
+
+/* Chiffres calculés à partir de la seule liste activities */
+const totalActivities = activities.length;
+const todayActivities = activities.filter(a => isToday(a.activity_date)).length;
+const totalCapacity   = activities.reduce((sum, a) => sum + Number(a.max_capacity || 0), 0);
+const usedFacilities  = new Set(activities.map(a => a.facility_id).filter(v => v !== null && v !== undefined)).size;
+%>
+
+<a class="skip-link" href="#contenu">Aller au contenu principal</a>
+
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="topbar__inner">
+
+    <a class="brand" href="/activities">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand__name">SportConnect Pro</span>
+    </a>
+
+    <nav class="mainnav" aria-label="Navigation principale">
+      <ul class="mainnav__list">
+        <!-- Rubriques non encore routées : volontairement non cliquables -->
+        <li><span class="navlink is-soon" aria-disabled="true">Dashboard<span class="soon">à venir</span></span></li>
+
+        <li><a class="navlink is-active" href="/activities" aria-current="page">Activités</a></li>
+        <li><a class="navlink" href="/facilities">Infrastructures</a></li>
+        <li><a class="navlink" href="/associations">Associations</a></li>
+        <li><a class="navlink" href="/members">Membres</a></li>
+
+        <li><span class="navlink is-soon" aria-disabled="true">Inscriptions<span class="soon">à venir</span></span></li>
+        <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li>
+      </ul>
+    </nav>
+
+    <div class="topbar__user">
+      <span class="user-chip">
+        <span class="user-chip__avatar" aria-hidden="true">SG</span>
+        <span class="user-chip__text">
+          <span class="user-chip__name">Service des sports</span>
+          <span class="user-chip__role">Gestionnaire</span>
+        </span>
+      </span>
+    </div>
+
+  </div>
+</header>
+
+<main id="contenu" class="page">
+  <div class="wrap">
+
+    <!-- ======================= EN-TÊTE DE PAGE ======================= -->
+    <div class="pagehead">
+      <div>
+        <h1 class="pagehead__title">Activités sportives</h1>
+        <p class="pagehead__sub">Gérez les activités, leurs horaires, capacités et infrastructures.</p>
+      </div>
+      <div class="pagehead__actions">
+        <button type="button" class="btn btn--primary" data-modal-open="modal-create">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+          </svg>
+          Nouvelle activité
         </button>
+      </div>
+    </div>
 
-    </form>
+    <!-- ===================== STATISTIQUES RAPIDES ==================== -->
+    <section class="stats" aria-label="Chiffres clés">
 
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2"/>
+            <path d="M3.5 9.5h17M8 13h8M8 16h5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= totalActivities %></span>
+        <span class="stat__label">Activités enregistrées</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="3.5" y="5" width="17" height="15" rx="2"/>
+            <path d="M8 3v4M16 3v4M3.5 10h17" stroke-linecap="round"/>
+            <circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= todayActivities %></span>
+        <span class="stat__label">Programmées aujourd’hui</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="9" cy="8.5" r="3.2"/>
+            <path d="M3.5 19c0-3 2.5-4.8 5.5-4.8s5.5 1.8 5.5 4.8" stroke-linecap="round"/>
+            <path d="M16.5 6.2a3.2 3.2 0 0 1 0 6M18 14.6c2 .7 3.2 2.3 3.2 4.4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= totalCapacity %></span>
+        <span class="stat__label">Places ouvertes au total</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3.5 20V9.8l5.2-3.3 5.3 3.3V20" stroke-linejoin="round"/>
+            <path d="M14 13h6.5v7M3.5 20h17M7 20v-4h3v4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= usedFacilities %></span>
+        <span class="stat__label">Infrastructures mobilisées</span>
+      </article>
+
+    </section>
+
+    <!-- ===================== RECHERCHE ET FILTRES ==================== -->
+    <!-- Filtrage effectué dans le navigateur : aucune requête au serveur. -->
+    <section class="panel filters" aria-labelledby="filters-title">
+      <h2 class="visually-hidden" id="filters-title">Filtrer la liste affichée</h2>
+
+      <div class="filters__grid">
+
+        <div class="field field--search">
+          <label for="filter-search">Rechercher une activité</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/>
+            </svg>
+            <input type="search" id="filter-search" autocomplete="off" placeholder="Nom de l’activité">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="filter-facility">Infrastructure</label>
+          <select id="filter-facility">
+            <option value="">Toutes</option>
+            <% facilities.forEach(facility => { %>
+              <option value="<%= facility.id %>"><%= facility.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="filter-association">Association</label>
+          <select id="filter-association">
+            <option value="">Toutes</option>
+            <% associations.forEach(association => { %>
+              <option value="<%= association.id %>"><%= association.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="filter-date">Date</label>
+          <input type="date" id="filter-date">
+        </div>
+
+        <div class="field">
+          <label for="filter-public">Public</label>
+          <select id="filter-public">
+            <option value="">Tous</option>
+            <option value="1">Tous publics</option>
+            <option value="0">Tranche d’âge définie</option>
+          </select>
+        </div>
+
+        <div class="filters__buttons">
+          <button type="button" class="btn btn--ghost" id="filters-reset">Réinitialiser</button>
+        </div>
+
+      </div>
+      <p class="filters__note">La recherche s’applique à la liste déjà chargée.</p>
+    </section>
+
+    <!-- ======================= LISTE DES ACTIVITÉS =================== -->
+    <section class="panel table-panel" aria-labelledby="list-title">
+
+      <div class="table-panel__head">
+        <h2 id="list-title" class="table-panel__title">Planning des activités</h2>
+        <p class="table-panel__count" id="result-count" aria-live="polite">
+          <%= totalActivities %> activité<%= totalActivities > 1 ? 's' : '' %>
+        </p>
+      </div>
+
+      <% if (activities.length === 0) { %>
+
+        <div class="empty">
+          <p class="empty__title">Aucune activité enregistrée.</p>
+          <p class="empty__text">Créez une première activité pour l’ajouter au planning.</p>
+          <button type="button" class="btn btn--primary" data-modal-open="modal-create">Créer une activité</button>
+        </div>
+
+      <% } else { %>
+
+        <div class="table-scroll">
+          <table class="table" id="activities-table">
+            <caption class="visually-hidden">Activités sportives : association, infrastructure, date, horaire, capacité et public concerné</caption>
+            <thead>
+              <tr>
+                <th scope="col">Activité</th>
+                <th scope="col">Association</th>
+                <th scope="col">Infrastructure</th>
+                <th scope="col">Date</th>
+                <th scope="col">Horaire</th>
+                <th scope="col">Capacité</th>
+                <th scope="col">Âge</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% activities.forEach(activity => { %>
+              <tr class="arow"
+                  data-name="<%= activity.name %>"
+                  data-facility="<%= activity.facility_id %>"
+                  data-association="<%= activity.association_id %>"
+                  data-date="<%= isoDate(activity.activity_date) %>"
+                  data-public="<%= activity.all_publics ? '1' : '0' %>">
+
+                <td data-label="Activité">
+                  <span class="cell-title"><%= activity.name %></span>
+                  <span class="cell-sub"><%= fmtPrice(activity.base_price) %> par inscription</span>
+                </td>
+
+                <td data-label="Association"><%= activity.association_name %></td>
+
+                <td data-label="Infrastructure"><%= activity.facility_name %></td>
+
+                <td data-label="Date" class="num">
+                  <%= fmtDate(activity.activity_date) %>
+                  <% if (isToday(activity.activity_date)) { %><span class="tag tag--today">Aujourd’hui</span><% } %>
+                </td>
+
+                <td data-label="Horaire" class="num"><%= fmtTime(activity.start_time) %> – <%= fmtTime(activity.end_time) %></td>
+
+                <td data-label="Capacité" class="num">
+                  <span class="badge badge--capacity"><%= activity.max_capacity %> places</span>
+                </td>
+
+                <td data-label="Âge">
+                  <% if (activity.all_publics) { %>
+                    <span class="badge badge--public">Tous publics</span>
+                  <% } else { %>
+                    <span class="cell-age"><%= activity.min_age %> - <%= activity.max_age %> ans</span>
+                  <% } %>
+                </td>
+
+                <td data-label="Actions" class="col-actions">
+                  <div class="rowactions">
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Voir le détail de <%= activity.name %>" title="Voir"
+                            data-modal-open="modal-view"
+                            data-name="<%= activity.name %>"
+                            data-association_name="<%= activity.association_name %>"
+                            data-facility_name="<%= activity.facility_name %>"
+                            data-date_label="<%= fmtDate(activity.activity_date) %>"
+                            data-time_label="<%= fmtTime(activity.start_time) %> – <%= fmtTime(activity.end_time) %>"
+                            data-capacity_label="<%= activity.max_capacity %> places"
+                            data-price_label="<%= fmtPrice(activity.base_price) %>"
+                            data-age_label="<%= activity.all_publics ? 'Tous publics' : activity.min_age + ' - ' + activity.max_age + ' ans' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/>
+                        <circle cx="12" cy="12" r="2.8"/>
+                      </svg>
+                      <span class="iconbtn__text">Voir</span>
+                    </button>
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Modifier <%= activity.name %>" title="Modifier"
+                            data-modal-open="modal-edit"
+                            data-id="<%= activity.id %>"
+                            data-name="<%= activity.name %>"
+                            data-base_price="<%= activity.base_price %>"
+                            data-max_capacity="<%= activity.max_capacity %>"
+                            data-activity_date="<%= isoDate(activity.activity_date) %>"
+                            data-start_time="<%= fmtTime(activity.start_time) %>"
+                            data-end_time="<%= fmtTime(activity.end_time) %>"
+                            data-min_age="<%= activity.min_age %>"
+                            data-max_age="<%= activity.max_age %>"
+                            data-all_publics="<%= activity.all_publics ? '1' : '0' %>"
+                            data-association_id="<%= activity.association_id %>"
+                            data-facility_id="<%= activity.facility_id %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4 20h4L19 9l-4-4L4 16v4Z" stroke-linejoin="round"/><path d="M14.5 5.5 18.5 9.5" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Modifier</span>
+                    </button>
+
+                    <button type="button" class="iconbtn iconbtn--danger"
+                            aria-label="Supprimer <%= activity.name %>" title="Supprimer"
+                            data-modal-open="modal-delete"
+                            data-id="<%= activity.id %>"
+                            data-name="<%= activity.name %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4.5 6.5h15M9.5 6.5V4.8h5v1.7M6.5 6.5 7.4 20h9.2l.9-13.5" stroke-linejoin="round"/>
+                        <path d="M10.2 10v6.4M13.8 10v6.4" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Supprimer</span>
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="empty empty--inline" id="no-match" hidden>
+          <span class="empty__title">Aucune activité ne correspond à ces critères.</span>
+        </p>
+
+      <% } %>
+    </section>
+
+  </div>
+</main>
+
+
+<!-- ==================== MODAL « NOUVELLE ACTIVITÉ » ================= -->
+<dialog class="modal modal--form" id="modal-create" aria-labelledby="modal-create-title">
+  <form method="POST" action="/activities" class="modal__form">
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-create-title">Nouvelle activité</h2>
+        <p class="modal__sub">Renseignez les informations du créneau à inscrire au planning.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Identification</legend>
+        <div class="grid">
+          <div class="field field--full">
+            <label for="create-name">Nom de l’activité</label>
+            <input type="text" id="create-name" name="name" required maxlength="120" placeholder="Football U18">
+          </div>
+          <div class="field">
+            <label for="create-base_price">Prix de base (€)</label>
+            <input type="number" id="create-base_price" name="base_price" min="0" step="0.01" value="0" required>
+          </div>
+          <div class="field">
+            <label for="create-max_capacity">Capacité maximale</label>
+            <input type="number" id="create-max_capacity" name="max_capacity" min="1" step="1" required placeholder="25">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Créneau</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="create-activity_date">Date</label>
+            <input type="date" id="create-activity_date" name="activity_date" required>
+          </div>
+          <div class="field">
+            <label for="create-start_time">Heure de début</label>
+            <input type="time" id="create-start_time" name="start_time" required>
+          </div>
+          <div class="field">
+            <label for="create-end_time">Heure de fin</label>
+            <input type="time" id="create-end_time" name="end_time" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Public concerné</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="create-min_age">Âge minimum</label>
+            <input type="number" id="create-min_age" name="min_age" min="0" max="120" step="1" value="0" required>
+          </div>
+          <div class="field">
+            <label for="create-max_age">Âge maximum</label>
+            <input type="number" id="create-max_age" name="max_age" min="0" max="120" step="1" value="99" required>
+          </div>
+          <div class="field field--full">
+            <label class="check">
+              <input type="checkbox" id="create-all_publics" name="all_publics">
+              <span>
+                <span class="check__title">Activité ouverte à tous les publics</span>
+                <span class="check__hint">La tranche d’âge reste enregistrée, mais la liste affichera « Tous publics ».</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Rattachement</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="create-association_id">Association</label>
+            <select id="create-association_id" name="association_id" required>
+              <option value="">Sélectionner une association</option>
+              <% associations.forEach(association => { %>
+                <option value="<%= association.id %>"><%= association.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field">
+            <label for="create-facility_id">Infrastructure</label>
+            <select id="create-facility_id" name="facility_id" required>
+              <option value="">Sélectionner une infrastructure</option>
+              <% facilities.forEach(facility => { %>
+                <option value="<%= facility.id %>"><%= facility.name %><% if (facility.erp_capacity) { %> — capacité ERP <%= facility.erp_capacity %><% } %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Créer l’activité</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ======================= MODAL MODIFICATION ======================= -->
+<dialog class="modal modal--form" id="modal-edit" aria-labelledby="modal-edit-title">
+  <form method="POST" action="/activities/update" class="modal__form">
+    <input type="hidden" name="id" id="edit-id">
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-edit-title">Modifier l’activité</h2>
+        <p class="modal__sub" id="modal-edit-sub">Mettez à jour les informations du créneau.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Identification</legend>
+        <div class="grid">
+          <div class="field field--full">
+            <label for="edit-name">Nom de l’activité</label>
+            <input type="text" id="edit-name" name="name" required maxlength="120">
+          </div>
+          <div class="field">
+            <label for="edit-base_price">Prix de base (€)</label>
+            <input type="number" id="edit-base_price" name="base_price" min="0" step="0.01" required>
+          </div>
+          <div class="field">
+            <label for="edit-max_capacity">Capacité maximale</label>
+            <input type="number" id="edit-max_capacity" name="max_capacity" min="1" step="1" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Créneau</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="edit-activity_date">Date</label>
+            <input type="date" id="edit-activity_date" name="activity_date" required>
+          </div>
+          <div class="field">
+            <label for="edit-start_time">Heure de début</label>
+            <input type="time" id="edit-start_time" name="start_time" required>
+          </div>
+          <div class="field">
+            <label for="edit-end_time">Heure de fin</label>
+            <input type="time" id="edit-end_time" name="end_time" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Public concerné</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="edit-min_age">Âge minimum</label>
+            <input type="number" id="edit-min_age" name="min_age" min="0" max="120" step="1" required>
+          </div>
+          <div class="field">
+            <label for="edit-max_age">Âge maximum</label>
+            <input type="number" id="edit-max_age" name="max_age" min="0" max="120" step="1" required>
+          </div>
+          <div class="field field--full">
+            <label class="check">
+              <input type="checkbox" id="edit-all_publics" name="all_publics">
+              <span>
+                <span class="check__title">Activité ouverte à tous les publics</span>
+                <span class="check__hint">La tranche d’âge reste enregistrée, mais la liste affichera « Tous publics ».</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Rattachement</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="edit-association_id">Association</label>
+            <select id="edit-association_id" name="association_id" required>
+              <option value="">Sélectionner une association</option>
+              <% associations.forEach(association => { %>
+                <option value="<%= association.id %>"><%= association.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field">
+            <label for="edit-facility_id">Infrastructure</label>
+            <select id="edit-facility_id" name="facility_id" required>
+              <option value="">Sélectionner une infrastructure</option>
+              <% facilities.forEach(facility => { %>
+                <option value="<%= facility.id %>"><%= facility.name %><% if (facility.erp_capacity) { %> — capacité ERP <%= facility.erp_capacity %><% } %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ===================== MODAL DÉTAIL (lecture) ===================== -->
+<dialog class="modal modal--view" id="modal-view" aria-labelledby="modal-view-title">
+  <header class="modal__head">
+    <div>
+      <h2 class="modal__title" id="modal-view-title">Détail de l’activité</h2>
+      <p class="modal__sub" id="view-name">—</p>
+    </div>
+    <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="modal__body">
+    <dl class="detail">
+      <div><dt>Association</dt><dd id="view-association">—</dd></div>
+      <div><dt>Infrastructure</dt><dd id="view-facility">—</dd></div>
+      <div><dt>Date</dt><dd id="view-date">—</dd></div>
+      <div><dt>Horaire</dt><dd id="view-time">—</dd></div>
+      <div><dt>Capacité</dt><dd id="view-capacity">—</dd></div>
+      <div><dt>Public</dt><dd id="view-age">—</dd></div>
+      <div><dt>Prix de base</dt><dd id="view-price">—</dd></div>
+    </dl>
+  </div>
+
+  <footer class="modal__foot">
+    <button type="button" class="btn btn--ghost" data-modal-close>Fermer</button>
+  </footer>
+</dialog>
+
+
+<!-- ================== CONFIRMATION DE SUPPRESSION =================== -->
+<dialog class="modal modal--confirm" id="modal-delete" aria-labelledby="modal-delete-title">
+  <form method="POST" action="/activities/delete" class="modal__form">
+    <input type="hidden" name="id" id="delete-id">
+
+    <div class="confirm">
+      <span class="confirm__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 8.5v5" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1.1" fill="currentColor" stroke="none"/>
+          <path d="M10.6 3.9 2.9 17.4A1.6 1.6 0 0 0 4.3 19.8h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 3.9a1.6 1.6 0 0 0-2.8 0Z" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div>
+        <h2 class="confirm__title" id="modal-delete-title">Supprimer cette activité&nbsp;?</h2>
+        <p class="confirm__text">
+          <span id="delete-name" class="confirm__target">Cette activité</span> sera retirée du planning. L’action est définitive.
+        </p>
+      </div>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--danger">Supprimer</button>
+    </footer>
+
+  </form>
+</dialog>
+
+<script src="../public/js/activities.js" defer></script>
 </body>
-
 </html>

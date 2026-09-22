@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Familles - SportConnect Pro</title>
+</head>
+
+<body>
+
+    <h1>Familles</h1>
+
+    <% if (families.length === 0) { %>
+        <p>Aucune famille enregistrée.</p>
+    <% } %>
+
+    <% families.forEach(family => { %>
+
+        <article>
+
+            <h2>
+                <%= family.family_name %>
+            </h2>
+
+            <p>
+                Quotient familial :
+                <%= family.quotient_familial %>
+            </p>
+
+            <h3>Modifier</h3>
+
+            <form method="POST" action="/families/update">
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<%= family.id %>"
+                >
+
+                <div>
+                    <label>
+                        Nom de famille :
+                        <input
+                            type="text"
+                            name="family_name"
+                            value="<%= family.family_name %>"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        Quotient familial :
+                        <input
+                            type="number"
+                            name="quotient_familial"
+                            value="<%= family.quotient_familial %>"
+                            min="0"
+                            step="0.01"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <button type="submit">
+                    Modifier
+                </button>
+
+            </form>
+
+            <form method="POST" action="/families/delete">
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<%= family.id %>"
+                >
+
+                <button type="submit">
+                    Supprimer
+                </button>
+
+            </form>
+
+            <hr>
+
+        </article>
+
+    <% }); %>
+
+
+    <h2>Ajouter une famille</h2>
+
+    <form method="POST" action="/families">
+
+        <div>
+            <label>
+                Nom de famille :
+                <input
+                    type="text"
+                    name="family_name"
+                    required
+                >
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Quotient familial :
+                <input
+                    type="number"
+                    name="quotient_familial"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+            </label>
+        </div>
+
+        <button type="submit">
+            Ajouter
+        </button>
+
+    </form>
+
+</body>
+
+</html>

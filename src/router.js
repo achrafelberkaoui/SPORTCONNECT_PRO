@@ -5,6 +5,7 @@ const facilityController = require('./controllers/facilityController');
 const associationController = require('./controllers/associationController');
 const activityController = require('../src/controllers/activityController');
 const memberController = require('./controllers/memberController');
+const familyController = require('./controllers/familyController');
 
 router.on('GET', '/', homeController.index);
 
@@ -13,8 +14,14 @@ router.on('GET','/activities',activityController.index);
 router.on('POST','/activities',activityController.create);
 router.on('POST','/activities/update',activityController.update);
 router.on('POST','/activities/delete',activityController.remove);
-//facilities
 
+//families
+router.on('GET','/families',familyController.index);
+router.on('POST','/families',familyController.create);
+router.on('POST','/families/update',familyController.update);
+router.on('POST','/families/delete',familyController.remove);
+
+//facilities
 router.on('GET', '/facilities', facilityController.index);
 router.on('POST', '/facilities', facilityController.create);
 router.on('POST', '/facilities/update', facilityController.update);
