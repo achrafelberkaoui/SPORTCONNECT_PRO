@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Dashboard - SportConnect Pro</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Dashboard SportConnect Pro</h1>
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h2>Membres</h2>
+            <div class="number">
+                <%= stats.members %>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Familles</h2>
+            <div class="number">
+                <%= stats.families %>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Associations</h2>
+            <div class="number">
+                <%= stats.associations %>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Équipements</h2>
+            <div class="number">
+                <%= stats.facilities %>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Activités</h2>
+            <div class="number">
+                <%= stats.activities %>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Inscriptions</h2>
+            <div class="number">
+                <%= stats.registrations %>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Liste d'attente</h2>
+            <div class="number">
+                <%= stats.waitingList %>
+            </div>
+        </div>
+
+    </div>
+    <h2>Remplissage des activités</h2>
+
+<table border="1" cellpadding="10">
+    <thead>
+        <tr>
+            <th>Activité</th>
+            <th>Inscrits</th>
+            <th>Capacité</th>
+            <th>Remplissage</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        <% activities.forEach(activity => { %>
+
+            <tr>
+
+                <td>
+                    <%= activity.name %>
+                </td>
+
+                <td>
+                    <%= activity.registeredCount %>
+                </td>
+
+                <td>
+                    <%= activity.maxCapacity %>
+                </td>
+
+                <td>
+                    <%= activity.occupancy %> %
+                </td>
+
+            </tr>
+
+        <% }); %>
+
+    </tbody>
+</table>
+<h2>Prochaines activités</h2>
+
+<table border="1" cellpadding="10">
+
+    <thead>
+        <tr>
+            <th>Activité</th>
+            <th>Date</th>
+            <th>Horaire</th>
+            <th>Équipement</th>
+            <th>Association</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        <% upcomingActivities.forEach(activity => { %>
+
+            <tr>
+
+                <td>
+                    <%= activity.name %>
+                </td>
+
+                <td>
+                    <%= activity.activity_date %>
+                </td>
+
+                <td>
+                    <%= activity.start_time %>
+                    -
+                    <%= activity.end_time %>
+                </td>
+
+                <td>
+                    <%= activity.facility_name %>
+                </td>
+
+                <td>
+                    <%= activity.association_name %>
+                </td>
+
+            </tr>
+
+        <% }); %>
+
+    </tbody>
+
+</table>
+
+    <br>
+
+    <a href="/">
+        Retour à l'accueil
+    </a>
+
+</body>
+
+</html>
