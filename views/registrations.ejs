@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inscriptions - SportConnect Pro</title>
+</head>
+
+<body>
+
+    <h1>Inscriptions</h1>
+
+    <h2>Nouvelle inscription</h2>
+
+    <form method="POST" action="/registrations">
+
+        <div>
+            <label>
+                Membre :
+
+                <select name="member_id" required>
+
+                    <option value="">
+                        Choisir un membre
+                    </option>
+
+                    <% members.forEach(member => { %>
+
+                        <option value="<%= member.id %>">
+                            <%= member.first_name %>
+                            <%= member.last_name %>
+                        </option>
+
+                    <% }); %>
+
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Activité :
+
+                <select name="activity_id" required>
+
+                    <option value="">
+                        Choisir une activité
+                    </option>
+
+                    <% activities.forEach(activity => { %>
+
+                        <option value="<%= activity.id %>">
+                            <%= activity.name %>
+                            -
+                            <%= activity.activity_date %>
+                            -
+                            <%= activity.start_time %>
+                        </option>
+
+                    <% }); %>
+
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Paiement :
+
+                <select name="payment_plan" required>
+                    <option value="1x">1 fois</option>
+                    <option value="3x">3 fois</option>
+                </select>
+
+            </label>
+        </div>
+
+        <button type="submit">
+            Inscrire
+        </button>
+
+    </form>
+
+
+    <h2>Inscriptions existantes</h2>
+
+    <% if (registrations.length === 0) { %>
+
+        <p>
+            Aucune inscription.
+        </p>
+
+    <% } %>
+
+
+    <% registrations.forEach(registration => { %>
+
+        <article>
+
+            <p>
+                <strong>Membre :</strong>
+                <%= registration.first_name %>
+                <%= registration.last_name %>
+            </p>
+
+            <p>
+                <strong>Activité :</strong>
+                <%= registration.activity_name %>
+            </p>
+
+            <p>
+                <strong>Prix :</strong>
+                <%= registration.final_price %> €
+            </p>
+
+            <p>
+                <strong>Paiement :</strong>
+                <%= registration.payment_plan %>
+            </p>
+
+            <p>
+                <strong>Statut :</strong>
+                <%= registration.status %>
+            </p>
+
+            <hr>
+
+        </article>
+
+    <% }); %>
+
+</body>
+
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste d'attente</title>
+</head>
+
+<body>
+
+    <h1>Liste d'attente</h1>
+
+    <% if (waitingList.length === 0) { %>
+
+        <p>Aucune personne en attente.</p>
+
+    <% } else { %>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Membre</th>
+                    <th>Priorité</th>
+                    <th>Statut</th>
+                    <th>Date limite</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <% waitingList.forEach((waiting, index) => { %>
+
+                    <tr>
+                        <td>
+                            <%= index + 1 %>
+                        </td>
+
+                        <td>
+                            <%= waiting.first_name %>
+                            <%= waiting.last_name %>
+                        </td>
+
+                        <td>
+                            <%= waiting.priority_score %>
+                        </td>
+
+                        <td>
+                            <%= waiting.status %>
+                        </td>
+
+                        <td>
+                            <%= waiting.deadline_confirmation || '-' %>
+                        </td>
+
+                        <td>
+
+                            <% if (waiting.status === 'promoted_pending') { %>
+
+                                <form
+                                    method="POST"
+                                    action="/waiting-list/confirm"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="waiting_list_id"
+                                        value="<%= waiting.id %>"
+                                    >
+
+                                    <button type="submit">
+                                        Confirmer
+                                    </button>
+
+                                </form>
+
+                            <% } else { %>
+
+                                -
+
+                            <% } %>
+
+                        </td>
+                    </tr>
+
+                <% }); %>
+
+            </tbody>
+        </table>
+
+    <% } %>
+
+    <br>
+
+    <a href="/registrations">
+        Retour aux inscriptions
+    </a>
+
+</body>
+</html>

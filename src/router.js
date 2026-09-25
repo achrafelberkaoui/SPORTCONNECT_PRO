@@ -6,7 +6,8 @@ const associationController = require('./controllers/associationController');
 const activityController = require('../src/controllers/activityController');
 const memberController = require('./controllers/memberController');
 const familyController = require('./controllers/familyController');
-
+const registrationController = require('./controllers/registrationController');
+const waitingListController = require('./controllers/waitingListController');
 router.on('GET', '/', homeController.index);
 
 //activities
@@ -43,6 +44,14 @@ router.on('GET','/members',memberController.index);
 router.on('POST','/members',memberController.create);
 router.on('POST','/members/update',memberController.update);
 router.on('POST','/members/delete',memberController.remove);
+
+//registrations
+router.on('GET','/registrations',registrationController.index);
+router.on('POST','/registrations',registrationController.create);
+
+//waiting-list
+router.on('GET','/activities/:id/waiting-list',waitingListController.index);
+router.on('POST','/waiting-list/confirm',waitingListController.confirm);
 
 //exports
 module.exports = router;
