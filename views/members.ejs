@@ -1,285 +1,648 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Membres - SportConnect Pro</title>
-</head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Membres — SportConnect Pro</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/members.css">
+</head>
 <body>
 
-    <h1>Membres</h1>
+<%
+/* --------------------------------------------------------------
+   Variables fournies par memberController.index :
+     members  -> id, first_name, last_name, date_of_birth,
+                 is_resident, family_id, medical_certificate_date,
+                 pass_sport_code, family_name, quotient_familial
+                 (LEFT JOIN families)
+     families -> id, family_name, quotient_familial
 
-    <% if (members.length === 0) { %>
-        <p>Aucun membre enregistré.</p>
-    <% } %>
+   Champs de formulaire acceptés par memberController :
+     create : first_name, last_name, date_of_birth, is_resident,
+              family_id, medical_certificate_date, pass_sport_code
+     update : id (PAS member_id), + les mêmes champs que create
+     delete : id (PAS member_id)
+-------------------------------------------------------------- */
 
-    <% members.forEach(member => { %>
+const memberList = members || [];
+const familyList = families || [];
 
-        <article>
+const toDate = (d) => {
+  if (!d) return null;
+  const x = (d instanceof Date) ? d : new Date(d);
+  return isNaN(x.getTime()) ? null : x;
+};
+const pad = (n) => ('0' + n).slice(-2);
+const fmtDate = (d) => {
+  const x = toDate(d);
+  return x ? pad(x.getDate()) + '/' + pad(x.getMonth() + 1) + '/' + x.getFullYear() : null;
+};
+const isoDate = (d) => {
+  const x = toDate(d);
+  return x ? x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate()) : '';
+};
+const calcAge = (d) => {
+  const x = toDate(d);
+  if (!x) return null;
+  const today = new Date();
+  let age = today.getFullYear() - x.getFullYear();
+  const m = today.getMonth() - x.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < x.getDate())) age--;
+  return age;
+};
 
-            <h2>
-                <%= member.first_name %>
-                <%= member.last_name %>
-            </h2>
+const initials = (first, last) => {
+  const a = (first || '').trim()[0] || '';
+  const b = (last || '').trim()[0] || '';
+  return (a + b).toUpperCase() || '—';
+};
 
-            <p>
-                Date de naissance :
-                <%= member.date_of_birth %>
-            </p>
+/* Statistiques calculées uniquement à partir de `members` */
+const total          = memberList.length;
+const residents      = memberList.filter(m => m.is_resident).length;
+const nonResidents    = total - residents;
+const withCertificate = memberList.filter(m => !!m.medical_certificate_date).length;
+%>
 
-            <p>
-                Résident :
-                <%= member.is_resident ? 'Oui' : 'Non' %>
-            </p>
+<a class="skip-link" href="#contenu">Aller au contenu principal</a>
 
-            <p>
-                Famille :
-                <%= member.family_name || 'Aucune' %>
-            </p>
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="topbar__inner">
 
-            <p>
-                Certificat médical :
-                <%= member.medical_certificate_date || 'Non renseigné' %>
-            </p>
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand__name">SportConnect Pro</span>
+    </a>
 
-            <p>
-                Pass'Sport :
-                <%= member.pass_sport_code || 'Aucun' %>
-            </p>
+    <nav class="mainnav" aria-label="Navigation principale">
+      <ul class="mainnav__list">
+        <li><span class="navlink is-soon" aria-disabled="true">Dashboard<span class="soon">à venir</span></span></li>
 
-            <hr>
+        <li><a class="navlink" href="/activities">Activités</a></li>
+        <li><a class="navlink" href="/facilities">Infrastructures</a></li>
+        <li><a class="navlink" href="/associations">Associations</a></li>
+        <li><a class="navlink is-active" href="/members" aria-current="page">Membres</a></li>
+        <li><a class="navlink" href="/families">families</a></li>
+        <li><a class="navlink" href="/registrations">Inscriptions</a></li>
 
-            <h3>Modifier</h3>
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li> -->
+      </ul>
+    </nav>
 
-            <form method="POST" action="/members/update">
+    <div class="topbar__user">
+      <span class="user-chip">
+        <span class="user-chip__avatar" aria-hidden="true">SG</span>
+        <span class="user-chip__text">
+          <span class="user-chip__name">Service des sports</span>
+          <span class="user-chip__role">Gestionnaire</span>
+        </span>
+      </span>
+    </div>
 
-                <input
-                    type="hidden"
-                    name="id"
-                    value="<%= member.id %>"
-                >
+  </div>
+</header>
 
-                <div>
-                    <label>
-                        Prénom :
-                        <input
-                            type="text"
-                            name="first_name"
-                            value="<%= member.first_name %>"
-                            required
-                        >
-                    </label>
-                </div>
+<main id="contenu" class="page">
+  <div class="wrap">
 
-                <div>
-                    <label>
-                        Nom :
-                        <input
-                            type="text"
-                            name="last_name"
-                            value="<%= member.last_name %>"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Date de naissance :
-                        <input
-                            type="date"
-                            name="date_of_birth"
-                            value="<%= member.date_of_birth instanceof Date
-                                ? member.date_of_birth.toISOString().slice(0, 10)
-                                : member.date_of_birth %>"
-                            required
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Résident :
-                        <input
-                            type="checkbox"
-                            name="is_resident"
-                            <%= member.is_resident ? 'checked' : '' %>
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Famille :
-                        <select name="family_id">
-
-                            <option value="">
-                                Aucune
-                            </option>
-
-                            <% families.forEach(family => { %>
-
-                                <option
-                                    value="<%= family.id %>"
-                                    <%= Number(member.family_id) === Number(family.id)
-                                        ? 'selected'
-                                        : '' %>
-                                >
-                                    <%= family.family_name %>
-                                </option>
-
-                            <% }); %>
-
-                        </select>
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Date certificat médical :
-                        <input
-                            type="date"
-                            name="medical_certificate_date"
-                            value="<%= member.medical_certificate_date || '' %>"
-                        >
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Code Pass'Sport :
-                        <input
-                            type="text"
-                            name="pass_sport_code"
-                            value="<%= member.pass_sport_code || '' %>"
-                        >
-                    </label>
-                </div>
-
-                <button type="submit">
-                    Modifier
-                </button>
-
-            </form>
-
-            <form method="POST" action="/members/delete">
-
-                <input
-                    type="hidden"
-                    name="id"
-                    value="<%= member.id %>"
-                >
-
-                <button type="submit">
-                    Supprimer
-                </button>
-
-            </form>
-
-            <hr>
-
-        </article>
-
-    <% }); %>
-
-
-    <h2>Ajouter un membre</h2>
-
-    <form method="POST" action="/members">
-
-        <div>
-            <label>
-                Prénom :
-                <input
-                    type="text"
-                    name="first_name"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Nom :
-                <input
-                    type="text"
-                    name="last_name"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Date de naissance :
-                <input
-                    type="date"
-                    name="date_of_birth"
-                    required
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Résident :
-                <input
-                    type="checkbox"
-                    name="is_resident"
-                    checked
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Famille :
-
-                <select name="family_id">
-
-                    <option value="">
-                        Aucune
-                    </option>
-
-                    <% families.forEach(family => { %>
-
-                        <option value="<%= family.id %>">
-                            <%= family.family_name %>
-                        </option>
-
-                    <% }); %>
-
-                </select>
-
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Date certificat médical :
-                <input
-                    type="date"
-                    name="medical_certificate_date"
-                >
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Code Pass'Sport :
-                <input
-                    type="text"
-                    name="pass_sport_code"
-                >
-            </label>
-        </div>
-
-        <button type="submit">
-            Ajouter
+    <!-- ======================= EN-TÊTE DE PAGE ======================= -->
+    <div class="pagehead">
+      <div>
+        <h1 class="pagehead__title">Membres</h1>
+        <p class="pagehead__sub">Consultez et gérez l’ensemble des membres inscrits.</p>
+      </div>
+      <div class="pagehead__actions">
+        <button type="button" class="btn btn--primary" data-modal-open="modal-create">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+          </svg>
+          Nouveau membre
         </button>
+      </div>
+    </div>
 
-    </form>
+    <!-- ===================== STATISTIQUES RAPIDES ==================== -->
+    <!-- Uniquement des chiffres calculés à partir de `members`. -->
+    <section class="stats" aria-label="Chiffres clés">
 
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="9" cy="8.2" r="3.2"/>
+            <path d="M3.5 19c0-3 2.5-4.8 5.5-4.8s5.5 1.8 5.5 4.8" stroke-linecap="round"/>
+            <path d="M16.5 6a3.1 3.1 0 0 1 0 5.9M18 14.4c1.9.7 3 2.2 3 4.1" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= total %></span>
+        <span class="stat__label">Membres enregistrés</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon stat__icon--turf" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3.5 20V9.8l5.2-3.3 5.3 3.3V20" stroke-linejoin="round"/>
+            <path d="M14 13h6.5v7M3.5 20h17M7 20v-4h3v4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= residents %></span>
+        <span class="stat__label">Résidents</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="8.5"/>
+            <path d="M9 15l6-6M9 9h.01M15 15h.01" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= nonResidents %></span>
+        <span class="stat__label">Non-résidents</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon stat__icon--warning" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="4" y="4.5" width="16" height="15" rx="2"/>
+            <path d="M9 3.5v3M15 3.5v3M7.5 12.5l2.5 2.5 5.5-5.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= withCertificate %></span>
+        <span class="stat__label">Certificat médical fourni</span>
+      </article>
+
+    </section>
+
+    <!-- ===================== RECHERCHE ET FILTRES ==================== -->
+    <!-- Recherche et filtres réalisés dans le navigateur : aucune requête au serveur. -->
+    <section class="panel filters" aria-labelledby="filters-title">
+      <h2 class="visually-hidden" id="filters-title">Rechercher un membre</h2>
+
+      <div class="filters__grid">
+
+        <div class="field field--search">
+          <label for="filter-search">Rechercher</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/>
+            </svg>
+            <input type="search" id="filter-search" autocomplete="off" placeholder="Nom ou prénom">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="filter-residence">Résidence</label>
+          <select id="filter-residence">
+            <option value="">Tous</option>
+            <option value="resident">Résidents</option>
+            <option value="non-resident">Non-résidents</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="filter-medical">Certificat médical</label>
+          <select id="filter-medical">
+            <option value="">Tous</option>
+            <option value="present">Fourni</option>
+            <option value="missing">Manquant</option>
+          </select>
+        </div>
+
+        <% if (familyList.length > 0) { %>
+          <div class="field">
+            <label for="filter-family">Famille</label>
+            <select id="filter-family">
+              <option value="">Toutes</option>
+              <option value="none">Sans famille</option>
+              <% familyList.forEach(f => { %>
+                <option value="<%= f.id %>"><%= f.family_name %></option>
+              <% }); %>
+            </select>
+          </div>
+        <% } %>
+
+        <div class="filters__buttons">
+          <button type="button" class="btn btn--ghost" id="filters-reset">Réinitialiser</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================= LISTE DES MEMBRES ==================== -->
+    <section class="panel table-panel" aria-labelledby="list-title">
+
+      <div class="table-panel__head">
+        <h2 id="list-title" class="table-panel__title">Registre des membres</h2>
+        <p class="table-panel__count" id="result-count" aria-live="polite">
+          <%= total %> membre<%= total > 1 ? 's' : '' %>
+        </p>
+      </div>
+
+      <% if (memberList.length === 0) { %>
+
+        <div class="empty">
+          <p class="empty__title">Aucun membre enregistré.</p>
+          <p class="empty__text">Commencez par ajouter un premier membre.</p>
+          <button type="button" class="btn btn--primary" data-modal-open="modal-create">Nouveau membre</button>
+        </div>
+
+      <% } else { %>
+
+        <div class="table-scroll">
+          <table class="table" id="members-table">
+            <caption class="visually-hidden">Membres avec date de naissance, résidence, famille, certificat médical et Pass'Sport</caption>
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Membre</th>
+                <th scope="col">Date de naissance</th>
+                <th scope="col">Résidence</th>
+                <th scope="col">Famille</th>
+                <th scope="col">Certificat médical</th>
+                <th scope="col">Pass’Sport</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% memberList.forEach(member => {
+                 const hasCert = !!member.medical_certificate_date;
+            %>
+              <tr class="mrow"
+                  data-first_name="<%= member.first_name %>"
+                  data-last_name="<%= member.last_name %>"
+                  data-is_resident="<%= member.is_resident ? '1' : '0' %>"
+                  data-has_certificate="<%= hasCert ? '1' : '0' %>"
+                  data-family_id="<%= member.family_id || '' %>">
+
+                <td data-label="ID" class="num">#<%= member.id %></td>
+
+                <td data-label="Membre">
+                  <div class="member-cell">
+                    <span class="avatar" aria-hidden="true"><%= initials(member.first_name, member.last_name) %></span>
+                    <span class="member-cell__name">
+                      <span class="member-cell__first"><%= member.first_name %></span>
+                      <span class="member-cell__last"><%= member.last_name %></span>
+                    </span>
+                  </div>
+                </td>
+
+                <td data-label="Date de naissance" class="num"><%= fmtDate(member.date_of_birth) || '—' %></td>
+
+                <td data-label="Résidence">
+                  <span class="badge <%= member.is_resident ? 'badge--resident' : 'badge--nonresident' %>">
+                    <%= member.is_resident ? 'Résident' : 'Non-résident' %>
+                  </span>
+                </td>
+
+                <td data-label="Famille"><%= member.family_name || 'Sans famille' %></td>
+
+                <td data-label="Certificat médical">
+                  <span class="badge <%= hasCert ? 'badge--valid' : 'badge--missing' %>">
+                    <%= hasCert ? 'Fourni' : 'Manquant' %>
+                  </span>
+                </td>
+
+                <td data-label="Pass’Sport">
+                  <% if (member.pass_sport_code) { %>
+                    <span class="badge badge--neutral">Disponible</span>
+                  <% } else { %>
+                    <span class="cell-muted">—</span>
+                  <% } %>
+                </td>
+
+                <td data-label="Actions" class="col-actions">
+                  <div class="rowactions">
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Voir la fiche de <%= member.first_name %> <%= member.last_name %>" title="Voir"
+                            data-modal-open="modal-view"
+                            data-first_name="<%= member.first_name %>"
+                            data-last_name="<%= member.last_name %>"
+                            data-date_of_birth="<%= fmtDate(member.date_of_birth) || '' %>"
+                            data-age="<%= calcAge(member.date_of_birth) !== null ? calcAge(member.date_of_birth) : '' %>"
+                            data-is_resident="<%= member.is_resident ? '1' : '0' %>"
+                            data-family_name="<%= member.family_name || '' %>"
+                            data-pass_sport_code="<%= member.pass_sport_code || '' %>"
+                            data-medical_certificate_date="<%= fmtDate(member.medical_certificate_date) || '' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/>
+                        <circle cx="12" cy="12" r="2.8"/>
+                      </svg>
+                      <span class="iconbtn__text">Voir</span>
+                    </button>
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Modifier <%= member.first_name %> <%= member.last_name %>" title="Modifier"
+                            data-modal-open="modal-edit"
+                            data-id="<%= member.id %>"
+                            data-first_name="<%= member.first_name %>"
+                            data-last_name="<%= member.last_name %>"
+                            data-date_of_birth="<%= isoDate(member.date_of_birth) %>"
+                            data-is_resident="<%= member.is_resident ? '1' : '0' %>"
+                            data-family_id="<%= member.family_id || '' %>"
+                            data-medical_certificate_date="<%= isoDate(member.medical_certificate_date) %>"
+                            data-pass_sport_code="<%= member.pass_sport_code || '' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4 20h4L19 9l-4-4L4 16v4Z" stroke-linejoin="round"/><path d="M14.5 5.5 18.5 9.5" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Modifier</span>
+                    </button>
+
+                    <button type="button" class="iconbtn iconbtn--danger"
+                            aria-label="Supprimer <%= member.first_name %> <%= member.last_name %>" title="Supprimer"
+                            data-modal-open="modal-delete"
+                            data-id="<%= member.id %>"
+                            data-name="<%= member.first_name %> <%= member.last_name %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4.5 6.5h15M9.5 6.5V4.8h5v1.7M6.5 6.5 7.4 20h9.2l.9-13.5" stroke-linejoin="round"/>
+                        <path d="M10.2 10v6.4M13.8 10v6.4" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Supprimer</span>
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="empty empty--inline" id="no-match" hidden>
+          <span class="empty__title">Aucun membre ne correspond à ces critères.</span>
+        </p>
+
+      <% } %>
+    </section>
+
+  </div>
+</main>
+
+
+<!-- ===================== MODALE « NOUVEAU MEMBRE » ==================== -->
+<dialog class="modal modal--form" id="modal-create" aria-labelledby="modal-create-title">
+  <form method="POST" action="/members" class="modal__form" novalidate>
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-create-title">Nouveau membre</h2>
+        <p class="modal__sub">Renseignez les informations du membre à ajouter.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Identité</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="create-first_name">Prénom</label>
+            <input type="text" id="create-first_name" name="first_name" required maxlength="80">
+          </div>
+          <div class="field">
+            <label for="create-last_name">Nom</label>
+            <input type="text" id="create-last_name" name="last_name" required maxlength="80">
+          </div>
+          <div class="field">
+            <label for="create-date_of_birth">Date de naissance</label>
+            <input type="date" id="create-date_of_birth" name="date_of_birth" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Résidence et famille</legend>
+        <div class="grid">
+          <div class="field field--full">
+            <label class="check">
+              <input type="checkbox" id="create-is_resident" name="is_resident" checked>
+              <span>
+                <span class="check__title">Membre résident</span>
+                <span class="check__hint">Décochez si le membre réside hors de la commune.</span>
+              </span>
+            </label>
+          </div>
+          <div class="field">
+            <label for="create-family_id">Famille</label>
+            <select id="create-family_id" name="family_id">
+              <option value="">Aucune</option>
+              <% familyList.forEach(f => { %>
+                <option value="<%= f.id %>"><%= f.family_name %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Médical et Pass’Sport</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="create-medical_certificate_date">Date du certificat médical</label>
+            <input type="date" id="create-medical_certificate_date" name="medical_certificate_date">
+            <p class="field__hint">Facultatif.</p>
+          </div>
+          <div class="field">
+            <label for="create-pass_sport_code">Code Pass’Sport</label>
+            <input type="text" id="create-pass_sport_code" name="pass_sport_code" maxlength="50">
+            <p class="field__hint">Facultatif.</p>
+          </div>
+        </div>
+      </fieldset>
+
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Ajouter le membre</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ======================= MODALE MODIFICATION ======================== -->
+<dialog class="modal modal--form" id="modal-edit" aria-labelledby="modal-edit-title">
+  <form method="POST" action="/members/update" class="modal__form" novalidate>
+    <input type="hidden" name="id" id="edit-id">
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-edit-title">Modifier le membre</h2>
+        <p class="modal__sub" id="modal-edit-sub">Mettez à jour les informations du membre.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Identité</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="edit-first_name">Prénom</label>
+            <input type="text" id="edit-first_name" name="first_name" required maxlength="80">
+          </div>
+          <div class="field">
+            <label for="edit-last_name">Nom</label>
+            <input type="text" id="edit-last_name" name="last_name" required maxlength="80">
+          </div>
+          <div class="field">
+            <label for="edit-date_of_birth">Date de naissance</label>
+            <input type="date" id="edit-date_of_birth" name="date_of_birth" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Résidence et famille</legend>
+        <div class="grid">
+          <div class="field field--full">
+            <label class="check">
+              <input type="checkbox" id="edit-is_resident" name="is_resident">
+              <span>
+                <span class="check__title">Membre résident</span>
+                <span class="check__hint">Décochez si le membre réside hors de la commune.</span>
+              </span>
+            </label>
+          </div>
+          <div class="field">
+            <label for="edit-family_id">Famille</label>
+            <select id="edit-family_id" name="family_id">
+              <option value="">Aucune</option>
+              <% familyList.forEach(f => { %>
+                <option value="<%= f.id %>"><%= f.family_name %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fset">
+        <legend class="fset__legend">Médical et Pass’Sport</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="edit-medical_certificate_date">Date du certificat médical</label>
+            <input type="date" id="edit-medical_certificate_date" name="medical_certificate_date">
+            <p class="field__hint">Facultatif.</p>
+          </div>
+          <div class="field">
+            <label for="edit-pass_sport_code">Code Pass’Sport</label>
+            <input type="text" id="edit-pass_sport_code" name="pass_sport_code" maxlength="50">
+            <p class="field__hint">Facultatif.</p>
+          </div>
+        </div>
+      </fieldset>
+
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ===================== MODALE DÉTAILS (lecture) ===================== -->
+<dialog class="modal modal--view" id="modal-view" aria-labelledby="modal-view-title">
+  <header class="modal__head">
+    <div>
+      <h2 class="modal__title" id="modal-view-title">Fiche membre</h2>
+      <p class="modal__sub" id="view-fullname">—</p>
+    </div>
+    <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="modal__body">
+
+    <section class="fiche-block">
+      <h3 class="fiche-block__title">Informations personnelles</h3>
+      <dl class="detail">
+        <div><dt>Prénom</dt><dd id="view-first_name">—</dd></div>
+        <div><dt>Nom</dt><dd id="view-last_name">—</dd></div>
+        <div><dt>Date de naissance</dt><dd id="view-date_of_birth">—</dd></div>
+        <div><dt>Âge</dt><dd id="view-age">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="fiche-block">
+      <h3 class="fiche-block__title">Adhésion</h3>
+      <dl class="detail">
+        <div><dt>Résidence</dt><dd><span class="badge" id="view-residence-badge">—</span></dd></div>
+        <div><dt>Famille</dt><dd id="view-family">—</dd></div>
+        <div><dt>Pass’Sport</dt><dd id="view-pass_sport">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="fiche-block">
+      <h3 class="fiche-block__title">Médical</h3>
+      <dl class="detail">
+        <div><dt>Date du certificat</dt><dd id="view-medical_date">—</dd></div>
+        <div><dt>Statut</dt><dd><span class="badge" id="view-medical-badge">—</span></dd></div>
+      </dl>
+    </section>
+
+  </div>
+
+  <footer class="modal__foot">
+    <button type="button" class="btn btn--ghost" data-modal-close>Fermer</button>
+  </footer>
+</dialog>
+
+
+<!-- =================== MODALE CONFIRMATION SUPPRESSION ================= -->
+<dialog class="modal modal--confirm" id="modal-delete" aria-labelledby="modal-delete-title">
+  <form method="POST" action="/members/delete" class="modal__form">
+    <input type="hidden" name="id" id="delete-id">
+
+    <div class="confirm">
+      <span class="confirm__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 8.5v5" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1.1" fill="currentColor" stroke="none"/>
+          <path d="M10.6 3.9 2.9 17.4A1.6 1.6 0 0 0 4.3 19.8h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 3.9a1.6 1.6 0 0 0-2.8 0Z" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div>
+        <h2 class="confirm__title" id="modal-delete-title">Supprimer ce membre&nbsp;?</h2>
+        <p class="confirm__text">
+          <span id="delete-name" class="confirm__target">Ce membre</span> sera définitivement retiré du registre. Cette action est irréversible.
+        </p>
+      </div>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--danger">Supprimer</button>
+    </footer>
+
+  </form>
+</dialog>
+
+<script src="/js/members.js" defer></script>
 </body>
 </html>

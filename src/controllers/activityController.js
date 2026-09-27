@@ -1,22 +1,75 @@
 const render = require('../utils/renderer');
 const activityService = require('../services/activityService');
 
+function isoDate(date) {
+    return new Date(date).toISOString().split('T')[0];
+}
+
+function fmtPrice(price) {
+    return `${Number(price).toFixed(2)} DH`;
+}
+
+function fmtDate(date) {
+    return new Date(date).toLocaleDateString('fr-FR');
+}
+
+function isToday(date) {
+    return isoDate(date) === isoDate(new Date());
+}
+
+function fmtTime(time) {
+    if (!time) return '';
+    return String(time).slice(0, 5);
+}
+
+
 async function index(req, res) {
     try {
         const activities = await activityService.getAllActivities();
         const formData = await activityService.getActivityFormData();
+
+        const totalActivities = activities.length;
+
+        const today = new Date().toISOString().split('T')[0];
+
+        const todayActivities = activities.filter(activity => {
+            return String(activity.activity_date).slice(0, 10) === today;
+        }).length;
+
+        const totalCapacity = activities.reduce((total, activity) => {
+            return total + Number(activity.max_capacity || 0);
+        }, 0);
+
+        const usedFacilities = new Set(
+            activities.map(activity => activity.facility_id)
+        ).size;
+
         render(res, 'activities', {
             activities,
             associations: formData.associations,
-            facilities: formData.facilities
+            facilities: formData.facilities,
+
+            totalActivities,
+            todayActivities,
+            totalCapacity,
+            usedFacilities,
+
+            // Helpers utilisés par activities.ejs
+            isoDate,
+            fmtPrice,
+            fmtDate,
+            isToday,
+            fmtTime
         });
 
     } catch (error) {
         console.error(error);
 
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('Erreur serveur');
+        if (!res.headersSent) {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Erreur serveur');
+        }
     }
 }
 
@@ -32,11 +85,39 @@ async function create(req, res) {
         res.end();
 
     } catch (error) {
-        console.error(error);
 
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end(error.message);
+        console.error('ERREUR INSCRIPTION :', error);
+
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+        res.end(`
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <title>Erreur inscription</title>
+            </head>
+
+            <body style="
+                font-family: Arial;
+                padding: 40px;
+                background: #f5f5f5;
+            ">
+
+                <h1>Erreur lors de l'inscription</h1>
+
+                <p>
+                    ${error.message}
+                </p>
+
+                <a href="/registrations">
+                    Retour aux inscriptions
+                </a>
+
+            </body>
+            </html>
+        `);
     }
 }
 

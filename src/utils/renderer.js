@@ -9,7 +9,7 @@ function render(res, view, data = {}){
             console.log(error);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'text/plain');
-            res.rnd('server Error');
+            res.end('server Error');
         }
         res.statusCode = 200;
         res.setHeader('Content-Type', 'text/html; charset=utf-8');

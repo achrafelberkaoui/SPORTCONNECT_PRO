@@ -13,57 +13,13 @@
 </head>
 <body>
 
-<%
-/* --------------------------------------------------------------
-   Variables fournies par activityController.index :
-     activities, associations, facilities
-   Aucune autre variable n'est utilisée.
-   Les fonctions ci-dessous ne font que du formatage d'affichage.
--------------------------------------------------------------- */
-
-const toDate = (d) => {
-  if (!d) return null;
-  const x = (d instanceof Date) ? d : new Date(d);
-  return isNaN(x.getTime()) ? null : x;
-};
-const pad = (n) => ('0' + n).slice(-2);
-
-// 20/09/2026
-const fmtDate = (d) => {
-  const x = toDate(d);
-  return x ? pad(x.getDate()) + '/' + pad(x.getMonth() + 1) + '/' + x.getFullYear() : '—';
-};
-// 2026-09-20 (valeur d'un <input type="date">)
-const isoDate = (d) => {
-  const x = toDate(d);
-  return x ? x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate()) : '';
-};
-// "18:00:00" -> "18:00"
-const fmtTime = (t) => t ? String(t).slice(0, 5) : '—';
-
-const isToday = (d) => {
-  const x = toDate(d);
-  if (!x) return false;
-  const n = new Date();
-  return x.getFullYear() === n.getFullYear() && x.getMonth() === n.getMonth() && x.getDate() === n.getDate();
-};
-
-const fmtPrice = (p) => (p === null || p === undefined || p === '') ? '—' : Number(p).toFixed(2) + ' €';
-
-/* Chiffres calculés à partir de la seule liste activities */
-const totalActivities = activities.length;
-const todayActivities = activities.filter(a => isToday(a.activity_date)).length;
-const totalCapacity   = activities.reduce((sum, a) => sum + Number(a.max_capacity || 0), 0);
-const usedFacilities  = new Set(activities.map(a => a.facility_id).filter(v => v !== null && v !== undefined)).size;
-%>
-
 <a class="skip-link" href="#contenu">Aller au contenu principal</a>
 
 <!-- ============================ HEADER ============================ -->
 <header class="topbar">
   <div class="topbar__inner">
 
-    <a class="brand" href="/activities">
+    <a class="brand" href="/">
       <span class="brand__mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
           <circle cx="12" cy="12" r="9"/>
@@ -75,16 +31,18 @@ const usedFacilities  = new Set(activities.map(a => a.facility_id).filter(v => v
 
     <nav class="mainnav" aria-label="Navigation principale">
       <ul class="mainnav__list">
-        <!-- Rubriques non encore routées : volontairement non cliquables -->
-        <li><span class="navlink is-soon" aria-disabled="true">Dashboard<span class="soon">à venir</span></span></li>
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Dashboard<span class="soon">à venir</span></span></li> -->
 
+        <li><a class="navlink" href="/dashboard">Dashboard</a></li>
         <li><a class="navlink is-active" href="/activities" aria-current="page">Activités</a></li>
         <li><a class="navlink" href="/facilities">Infrastructures</a></li>
         <li><a class="navlink" href="/associations">Associations</a></li>
+        <li><a class="navlink" href="/families">Familles</a></li>
         <li><a class="navlink" href="/members">Membres</a></li>
+        <li><a class="navlink" href="/registrations">Inscriptions</a></li>
 
-        <li><span class="navlink is-soon" aria-disabled="true">Inscriptions<span class="soon">à venir</span></span></li>
-        <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li>
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Inscriptions<span class="soon">à venir</span></span></li> -->
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li> -->
       </ul>
     </nav>
 
@@ -660,6 +618,6 @@ const usedFacilities  = new Set(activities.map(a => a.facility_id).filter(v => v
   </form>
 </dialog>
 
-<script src="../public/js/activities.js" defer></script>
+<script src="../js/activities.js" defer></script>
 </body>
 </html>

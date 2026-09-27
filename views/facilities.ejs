@@ -1,167 +1,447 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Infrastructures - SportConnect Pro</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infrastructures — SportConnect Pro</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/facilities.css">
 </head>
 <body>
 
-    <h1>Infrastructures sportives</h1>
+<%
+/* --------------------------------------------------------------
+   Variable fournie par facilityController.index : facilities
+   (id, name, type, erp_capacity). Aucune autre donnée n'existe :
+   pas de jointure avec activities, donc pas de statistique
+   d'utilisation réelle des infrastructures.
+-------------------------------------------------------------- */
 
-    <ul>
+const facilityList = facilities || [];
 
-        <% facilities.forEach(facility => { %>
+const display = (v) => (v === null || v === undefined || v === '') ? '—' : v;
 
-            <li>
+/* Statistiques calculées uniquement à partir de `facilities` */
+const total = facilityList.length;
+const totalCapacity = facilityList.reduce((sum, f) => sum + Number(f.erp_capacity || 0), 0);
+const distinctTypes = [...new Set(facilityList.map(f => f.type).filter(Boolean))];
+const averageCapacity = total > 0 ? Math.round(totalCapacity / total) : 0;
+%>
 
-                <strong>
-                    <%= facility.name %>
-                </strong>
+<a class="skip-link" href="#contenu">Aller au contenu principal</a>
 
-                -
-                <%= facility.type %>
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="topbar__inner">
 
-                -
-                Capacité ERP :
-                <%= facility.erp_capacity %>
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand__name">SportConnect Pro</span>
+    </a>
 
+    <nav class="mainnav" aria-label="Navigation principale">
+      <ul class="mainnav__list">
+        <li><span class="navlink" href="/dashboard">Dashboard</span></li>
 
-                <!-- UPDATE -->
+        <li><a class="navlink" href="/activities">Activités</a></li>
+        <li><a class="navlink is-active" href="/facilities" aria-current="page">Infrastructures</a></li>
+        <li><a class="navlink" href="/associations">Associations</a></li>
+        <li><a class="navlink" href="/members">Membres</a></li>
+        <li><a class="navlink" href="/families">Familles</a></li>
+        <li><a class="navlink" href="/registrations">Inscriptions</a></li>
 
-                <h3>Modifier cette infrastructure</h3>
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li> -->
+      </ul>
+    </nav>
 
-                <form method="POST" action="/facilities/update">
+    <div class="topbar__user">
+      <span class="user-chip">
+        <span class="user-chip__avatar" aria-hidden="true">SG</span>
+        <span class="user-chip__text">
+          <span class="user-chip__name">Service des sports</span>
+          <span class="user-chip__role">Gestionnaire</span>
+        </span>
+      </span>
+    </div>
 
-                    <input
-                        type="hidden"
-                        name="id"
-                        value="<%= facility.id %>"
-                    >
+  </div>
+</header>
 
-                    <div>
-                        <label for="name-<%= facility.id %>">
-                            Nom :
-                        </label>
+<main id="contenu" class="page">
+  <div class="wrap">
 
-                        <input
-                            type="text"
-                            id="name-<%= facility.id %>"
-                            name="name"
-                            value="<%= facility.name %>"
-                            required
-                        >
-                    </div>
-
-                    <div>
-                        <label for="type-<%= facility.id %>">
-                            Type :
-                        </label>
-
-                        <input
-                            type="text"
-                            id="type-<%= facility.id %>"
-                            name="type"
-                            value="<%= facility.type %>"
-                            required
-                        >
-                    </div>
-
-                    <div>
-                        <label for="capacity-<%= facility.id %>">
-                            Capacité ERP :
-                        </label>
-
-                        <input
-                            type="number"
-                            id="capacity-<%= facility.id %>"
-                            name="erp_capacity"
-                            value="<%= facility.erp_capacity %>"
-                            min="1"
-                            required
-                        >
-                    </div>
-
-                    <button type="submit">
-                        Modifier
-                    </button>
-
-                </form>
-                
-                <form method="POST" action="/facilities/delete">
-                
-                    <input
-                        type="hidden"
-                        name="id"
-                        value="<%= facility.id %>"
-                    >
-                
-                    <button type="submit">
-                        Supprimer
-                    </button>
-                
-                </form>
-
-                <hr>
-
-            </li>
-
-        <% }); %>
-
-    </ul>
-
-
-    <!-- CREATE -->
-
-    <h2>Ajouter une infrastructure</h2>
-
-    <form method="POST" action="/facilities">
-
-        <div>
-            <label for="new-name">
-                Nom :
-            </label>
-
-            <input
-                type="text"
-                id="new-name"
-                name="name"
-                required
-            >
-        </div>
-
-        <div>
-            <label for="new-type">
-                Type :
-            </label>
-
-            <input
-                type="text"
-                id="new-type"
-                name="type"
-                required
-            >
-        </div>
-
-        <div>
-            <label for="new-capacity">
-                Capacité ERP :
-            </label>
-
-            <input
-                type="number"
-                id="new-capacity"
-                name="erp_capacity"
-                min="1"
-                required
-            >
-        </div>
-
-        <button type="submit">
-            Ajouter
+    <!-- ======================= EN-TÊTE DE PAGE ======================= -->
+    <div class="pagehead">
+      <div>
+        <h1 class="pagehead__title">Infrastructures</h1>
+        <p class="pagehead__sub">Gestion des infrastructures et capacités d’accueil sportives.</p>
+      </div>
+      <div class="pagehead__actions">
+        <button type="button" class="btn btn--primary" data-modal-open="modal-create">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+          </svg>
+          Nouvelle infrastructure
         </button>
+      </div>
+    </div>
 
-    </form>
+    <!-- ===================== STATISTIQUES RAPIDES ==================== -->
+    <!-- Uniquement des chiffres calculés à partir de `facilities`. -->
+    <section class="stats" aria-label="Chiffres clés">
 
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3.5 20V9.8l5.2-3.3 5.3 3.3V20" stroke-linejoin="round"/>
+            <path d="M14 13h6.5v7M3.5 20h17M7 20v-4h3v4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= total %></span>
+        <span class="stat__label">Infrastructures enregistrées</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon stat__icon--turf" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="9" cy="8.5" r="3.2"/>
+            <path d="M3.5 19c0-3 2.5-4.8 5.5-4.8s5.5 1.8 5.5 4.8" stroke-linecap="round"/>
+            <path d="M16.5 6.2a3.2 3.2 0 0 1 0 6M18 14.6c2 .7 3.2 2.3 3.2 4.4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= totalCapacity %></span>
+        <span class="stat__label">Capacité ERP totale</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="3.5" y="4.5" width="7" height="7" rx="1.5"/>
+            <rect x="13.5" y="4.5" width="7" height="7" rx="1.5"/>
+            <rect x="3.5" y="14.5" width="7" height="7" rx="1.5"/>
+            <rect x="13.5" y="14.5" width="7" height="7" rx="1.5"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= distinctTypes.length %></span>
+        <span class="stat__label">Types d’infrastructures</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="8.5"/>
+            <path d="M12 8v4.3l3 2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= averageCapacity %></span>
+        <span class="stat__label">Capacité ERP moyenne</span>
+      </article>
+
+    </section>
+
+    <!-- ===================== RECHERCHE ET FILTRES ==================== -->
+    <!-- Recherche et filtre réalisés dans le navigateur : aucune requête au serveur. -->
+    <section class="panel filters" aria-labelledby="filters-title">
+      <h2 class="visually-hidden" id="filters-title">Rechercher une infrastructure</h2>
+
+      <div class="filters__grid">
+
+        <div class="field field--search">
+          <label for="filter-search">Rechercher</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/>
+            </svg>
+            <input type="search" id="filter-search" autocomplete="off" placeholder="Nom ou type">
+          </div>
+        </div>
+
+        <% if (distinctTypes.length > 0) { %>
+          <div class="field">
+            <label for="filter-type">Type</label>
+            <select id="filter-type">
+              <option value="">Tous</option>
+              <% distinctTypes.forEach(t => { %>
+                <option value="<%= t %>"><%= t %></option>
+              <% }); %>
+            </select>
+          </div>
+        <% } %>
+
+        <div class="filters__buttons">
+          <button type="button" class="btn btn--ghost" id="filters-reset">Réinitialiser</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== LISTE DES INFRASTRUCTURES ================= -->
+    <section class="panel table-panel" aria-labelledby="list-title">
+
+      <div class="table-panel__head">
+        <h2 id="list-title" class="table-panel__title">Registre des infrastructures</h2>
+        <p class="table-panel__count" id="result-count" aria-live="polite">
+          <%= total %> infrastructure<%= total > 1 ? 's' : '' %>
+        </p>
+      </div>
+
+      <% if (facilityList.length === 0) { %>
+
+        <div class="empty">
+          <p class="empty__title">Aucune infrastructure enregistrée.</p>
+          <p class="empty__text">Ajoutez une première infrastructure pour pouvoir l’associer à des activités.</p>
+          <button type="button" class="btn btn--primary" data-modal-open="modal-create">Créer une infrastructure</button>
+        </div>
+
+      <% } else { %>
+
+        <div class="table-scroll">
+          <table class="table" id="facilities-table">
+            <caption class="visually-hidden">Infrastructures avec leur type et leur capacité ERP</caption>
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nom</th>
+                <th scope="col">Type</th>
+                <th scope="col">Capacité ERP</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% facilityList.forEach(facility => { %>
+              <tr class="frow" data-name="<%= facility.name %>" data-type="<%= facility.type || '' %>">
+
+                <td data-label="ID" class="num">#<%= facility.id %></td>
+
+                <td data-label="Nom"><span class="cell-title"><%= display(facility.name) %></span></td>
+
+                <td data-label="Type">
+                  <% if (facility.type) { %>
+                    <span class="badge badge--type"><%= facility.type %></span>
+                  <% } else { %>
+                    <span class="cell-muted">—</span>
+                  <% } %>
+                </td>
+
+                <td data-label="Capacité ERP" class="num"><%= display(facility.erp_capacity) %></td>
+
+                <td data-label="Actions" class="col-actions">
+                  <div class="rowactions">
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Voir la fiche de <%= facility.name %>" title="Voir"
+                            data-modal-open="modal-view"
+                            data-id="<%= facility.id %>"
+                            data-name="<%= facility.name %>"
+                            data-type="<%= facility.type || '' %>"
+                            data-erp_capacity="<%= facility.erp_capacity !== null && facility.erp_capacity !== undefined ? facility.erp_capacity : '' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/>
+                        <circle cx="12" cy="12" r="2.8"/>
+                      </svg>
+                      <span class="iconbtn__text">Voir</span>
+                    </button>
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Modifier <%= facility.name %>" title="Modifier"
+                            data-modal-open="modal-edit"
+                            data-id="<%= facility.id %>"
+                            data-name="<%= facility.name %>"
+                            data-type="<%= facility.type || '' %>"
+                            data-erp_capacity="<%= facility.erp_capacity !== null && facility.erp_capacity !== undefined ? facility.erp_capacity : '' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4 20h4L19 9l-4-4L4 16v4Z" stroke-linejoin="round"/><path d="M14.5 5.5 18.5 9.5" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Modifier</span>
+                    </button>
+
+                    <button type="button" class="iconbtn iconbtn--danger"
+                            aria-label="Supprimer <%= facility.name %>" title="Supprimer"
+                            data-modal-open="modal-delete"
+                            data-id="<%= facility.id %>"
+                            data-name="<%= facility.name %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4.5 6.5h15M9.5 6.5V4.8h5v1.7M6.5 6.5 7.4 20h9.2l.9-13.5" stroke-linejoin="round"/>
+                        <path d="M10.2 10v6.4M13.8 10v6.4" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Supprimer</span>
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="empty empty--inline" id="no-match" hidden>
+          <span class="empty__title">Aucune infrastructure ne correspond à cette recherche.</span>
+        </p>
+
+      <% } %>
+    </section>
+
+  </div>
+</main>
+
+
+<!-- =================== MODALE « NOUVELLE INFRASTRUCTURE » ============== -->
+<dialog class="modal modal--form" id="modal-create" aria-labelledby="modal-create-title">
+  <form method="POST" action="/facilities" class="modal__form" novalidate>
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-create-title">Nouvelle infrastructure</h2>
+        <p class="modal__sub">Renseignez le nom, le type et la capacité ERP de l’infrastructure.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+      <fieldset class="fset">
+        <legend class="fset__legend">Caractéristiques</legend>
+        <div class="grid">
+          <div class="field field--full">
+            <label for="create-name">Nom</label>
+            <input type="text" id="create-name" name="name" required maxlength="120" placeholder="Gymnase Jean Moulin">
+          </div>
+          <div class="field">
+            <label for="create-type">Type</label>
+            <input type="text" id="create-type" name="type" required maxlength="80" placeholder="Gymnase">
+          </div>
+          <div class="field">
+            <label for="create-erp_capacity">Capacité ERP</label>
+            <input type="number" id="create-erp_capacity" name="erp_capacity" min="1" step="1" required placeholder="300">
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Créer l’infrastructure</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ===================== MODALE MODIFICATION ============================ -->
+<dialog class="modal modal--form" id="modal-edit" aria-labelledby="modal-edit-title">
+  <form method="POST" action="/facilities/update" class="modal__form" novalidate>
+    <input type="hidden" name="id" id="edit-id">
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-edit-title">Modifier l’infrastructure</h2>
+        <p class="modal__sub" id="modal-edit-sub">Mettez à jour les informations de l’infrastructure.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+      <fieldset class="fset">
+        <legend class="fset__legend">Caractéristiques</legend>
+        <div class="grid">
+          <div class="field field--full">
+            <label for="edit-name">Nom</label>
+            <input type="text" id="edit-name" name="name" required maxlength="120">
+          </div>
+          <div class="field">
+            <label for="edit-type">Type</label>
+            <input type="text" id="edit-type" name="type" required maxlength="80">
+          </div>
+          <div class="field">
+            <label for="edit-erp_capacity">Capacité ERP</label>
+            <input type="number" id="edit-erp_capacity" name="erp_capacity" min="1" step="1" required>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ===================== MODALE DÉTAILS (lecture) ======================= -->
+<dialog class="modal modal--view" id="modal-view" aria-labelledby="modal-view-title">
+  <header class="modal__head">
+    <div>
+      <h2 class="modal__title" id="modal-view-title">Fiche infrastructure</h2>
+    </div>
+    <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="modal__body">
+    <dl class="detail">
+      <div><dt>ID</dt><dd id="view-id">—</dd></div>
+      <div><dt>Nom</dt><dd id="view-name">—</dd></div>
+      <div><dt>Type</dt><dd id="view-type">—</dd></div>
+      <div><dt>Capacité ERP</dt><dd id="view-capacity">—</dd></div>
+    </dl>
+  </div>
+
+  <footer class="modal__foot">
+    <button type="button" class="btn btn--ghost" data-modal-close>Fermer</button>
+  </footer>
+</dialog>
+
+
+<!-- =================== MODALE CONFIRMATION SUPPRESSION ================== -->
+<dialog class="modal modal--confirm" id="modal-delete" aria-labelledby="modal-delete-title">
+  <form method="POST" action="/facilities/delete" class="modal__form">
+    <input type="hidden" name="id" id="delete-id">
+
+    <div class="confirm">
+      <span class="confirm__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 8.5v5" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1.1" fill="currentColor" stroke="none"/>
+          <path d="M10.6 3.9 2.9 17.4A1.6 1.6 0 0 0 4.3 19.8h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 3.9a1.6 1.6 0 0 0-2.8 0Z" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div>
+        <h2 class="confirm__title" id="modal-delete-title">Supprimer cette infrastructure&nbsp;?</h2>
+        <p class="confirm__text">
+          <span id="delete-name" class="confirm__target">Cette infrastructure</span> sera retirée du registre. Cette action est irréversible.
+        </p>
+      </div>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--danger">Supprimer</button>
+    </footer>
+
+  </form>
+</dialog>
+
+<script src="/js/facilities.js" defer></script>
 </body>
-
 </html>

@@ -1,130 +1,436 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Associations - SportConnect Pro</title>
-</head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Associations — SportConnect Pro</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/associations.css">
+</head>
 <body>
 
-    <h1>Associations sportives</h1>
+<%
+/* --------------------------------------------------------------
+   Variable fournie par associationController.index : associations
+   (id, name, description). Aucune autre donnée n'est disponible :
+   pas de statut, pas de nombre d'activités liées, pas de membres.
+   Les indicateurs ci-dessous ne dérivent que de ces trois champs.
+-------------------------------------------------------------- */
 
-    <ul>
+const list = associations || [];
 
-        <% associations.forEach(association => { %>
+const hasDescription = (a) => !!(a.description && String(a.description).trim().length > 0);
 
-            <li>
+const totalAssociations = list.length;
+const withDescription   = list.filter(hasDescription).length;
+const withoutDescription = totalAssociations - withDescription;
 
-                <strong>
-                    <%= association.name %>
-                </strong>
+// Initiales pour l'avatar (ex. "Club Sportif Municipal" -> "CS")
+const initials = (name) => {
+  if (!name) return '—';
+  const words = String(name).trim().split(/\s+/).filter(Boolean);
+  const letters = words.slice(0, 2).map(w => w[0]);
+  return letters.join('').toUpperCase() || '—';
+};
 
-                <p>
-                    <%= association.description || 'Aucune description' %>
-                </p>
+// Description tronquée pour l'aperçu du tableau
+const preview = (text, max) => {
+  if (!text) return null;
+  const t = String(text).trim();
+  return t.length > max ? t.slice(0, max - 1).trim() + '…' : t;
+};
+%>
 
-                <h3>Modifier cette association</h3>
+<a class="skip-link" href="#contenu">Aller au contenu principal</a>
 
-                <form method="POST" action="/associations/update">
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="topbar__inner">
 
-                    <input
-                        type="hidden"
-                        name="id"
-                        value="<%= association.id %>"
-                    >
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand__name">SportConnect Pro</span>
+    </a>
 
-                    <div>
-                        <label for="name-<%= association.id %>">
-                            Nom :
-                        </label>
+    <nav class="mainnav" aria-label="Navigation principale">
+      <ul class="mainnav__list">
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Dashboard<span class="soon">à venir</span></span></li> -->
 
-                        <input
-                            type="text"
-                            id="name-<%= association.id %>"
-                            name="name"
-                            value="<%= association.name %>"
-                            required
-                        >
-                    </div>
+        <li><a class="navlink" href="/dashboard">Dashboard</a></li>
+        <li><a class="navlink" href="/activities">Activités</a></li>
+        <li><a class="navlink" href="/facilities">Infrastructures</a></li>
+        <li><a class="navlink is-active" href="/associations" aria-current="page">Associations</a></li>
+        <li><a class="navlink" href="/members">Membres</a></li>
+        <li><a class="navlink" href="/families">families</a></li>
+        <li><a class="navlink" href="/registrations">Inscriptions</a></li>
 
-                    <div>
-                        <label for="description-<%= association.id %>">
-                            Description :
-                        </label>
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Inscriptions<span class="soon">à venir</span></span></li> -->
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li> -->
+      </ul>
+    </nav>
 
-                        <textarea
-                            id="description-<%= association.id %>"
-                            name="description"
-                        ><%= association.description || '' %></textarea>
-                    </div>
+    <div class="topbar__user">
+      <span class="user-chip">
+        <span class="user-chip__avatar" aria-hidden="true">SG</span>
+        <span class="user-chip__text">
+          <span class="user-chip__name">Service des sports</span>
+          <span class="user-chip__role">Gestionnaire</span>
+        </span>
+      </span>
+    </div>
 
-                    <button type="submit">
-                        Modifier
-                    </button>
+  </div>
+</header>
 
-                </form>
+<main id="contenu" class="page">
+  <div class="wrap">
 
-                <form
-                    method="POST"
-                    action="/associations/delete"
-                >
-
-                    <input
-                        type="hidden"
-                        name="id"
-                        value="<%= association.id %>"
-                    >
-
-                    <button type="submit">
-                        Supprimer
-                    </button>
-
-                </form>
-
-                <hr>
-
-            </li>
-
-        <% }); %>
-
-    </ul>
-
-
-    <h2>Ajouter une association</h2>
-
-    <form method="POST" action="/associations">
-
-        <div>
-            <label for="new-name">
-                Nom :
-            </label>
-
-            <input
-                type="text"
-                id="new-name"
-                name="name"
-                required
-            >
-        </div>
-
-        <div>
-            <label for="new-description">
-                Description :
-            </label>
-
-            <textarea
-                id="new-description"
-                name="description"
-            ></textarea>
-        </div>
-
-        <button type="submit">
-            Ajouter
+    <!-- ======================= EN-TÊTE DE PAGE ======================= -->
+    <div class="pagehead">
+      <div>
+        <h1 class="pagehead__title">Associations</h1>
+        <p class="pagehead__sub">Gérez les associations sportives partenaires de la municipalité.</p>
+      </div>
+      <div class="pagehead__actions">
+        <button type="button" class="btn btn--primary" data-modal-open="modal-create">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+          </svg>
+          Nouvelle association
         </button>
+      </div>
+    </div>
 
-    </form>
+    <!-- ===================== STATISTIQUES RAPIDES ==================== -->
+    <!-- Uniquement des chiffres calculables à partir de `associations`
+         (id, name, description). Aucune autre donnée n'existe côté backend. -->
+    <section class="stats stats--3" aria-label="Chiffres clés">
 
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3.5 20V9.8l5.2-3.3 5.3 3.3V20" stroke-linejoin="round"/>
+            <path d="M14 13h6.5v7M3.5 20h17M7 20v-4h3v4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= totalAssociations %></span>
+        <span class="stat__label">Associations enregistrées</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2"/>
+            <path d="M7 9h10M7 12.5h10M7 16h6" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= withDescription %></span>
+        <span class="stat__label">Avec description renseignée</span>
+      </article>
+
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="8.5"/>
+            <path d="M9 9l6 6M15 9l-6 6" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= withoutDescription %></span>
+        <span class="stat__label">Fiches à compléter</span>
+      </article>
+
+    </section>
+
+    <!-- ===================== RECHERCHE ET FILTRES ==================== -->
+    <!-- Recherche réalisée dans le navigateur : aucune requête au serveur. -->
+    <section class="panel filters" aria-labelledby="filters-title">
+      <h2 class="visually-hidden" id="filters-title">Rechercher une association</h2>
+
+      <div class="filters__grid">
+
+        <div class="field field--search">
+          <label for="filter-search">Rechercher une association</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/>
+            </svg>
+            <input type="search" id="filter-search" autocomplete="off" placeholder="Nom ou description">
+          </div>
+        </div>
+
+        <div class="filters__buttons">
+          <button type="button" class="btn btn--ghost" id="filters-reset">Réinitialiser</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================== LISTE DES ASSOCIATIONS ================== -->
+    <section class="panel table-panel" aria-labelledby="list-title">
+
+      <div class="table-panel__head">
+        <h2 id="list-title" class="table-panel__title">Répertoire des associations</h2>
+        <p class="table-panel__count" id="result-count" aria-live="polite">
+          <%= totalAssociations %> association<%= totalAssociations > 1 ? 's' : '' %>
+        </p>
+      </div>
+
+      <% if (list.length === 0) { %>
+
+        <div class="empty">
+          <p class="empty__title">Aucune association enregistrée.</p>
+          <p class="empty__text">Ajoutez une première association pour l’associer aux activités du planning.</p>
+          <button type="button" class="btn btn--primary" data-modal-open="modal-create">Créer une association</button>
+        </div>
+
+      <% } else { %>
+
+        <div class="table-scroll">
+          <table class="table" id="associations-table">
+            <caption class="visually-hidden">Associations sportives avec leur description</caption>
+            <thead>
+              <tr>
+                <th scope="col">Association</th>
+                <th scope="col">Description</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% list.forEach(association => {
+                 const shortDesc = preview(association.description, 140);
+            %>
+              <tr class="arow" data-name="<%= association.name %>" data-description="<%= association.description || '' %>">
+
+                <td data-label="Association">
+                  <div class="assoc-cell">
+                    <span class="avatar" aria-hidden="true"><%= initials(association.name) %></span>
+                    <span class="cell-title"><%= association.name %></span>
+                  </div>
+                </td>
+
+                <td data-label="Description">
+                  <% if (shortDesc) { %>
+                    <span class="cell-desc"><%= shortDesc %></span>
+                  <% } else { %>
+                    <span class="cell-desc cell-desc--empty">Aucune description</span>
+                  <% } %>
+                </td>
+
+                <td data-label="Actions" class="col-actions">
+                  <div class="rowactions">
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Voir la fiche de <%= association.name %>" title="Voir"
+                            data-modal-open="modal-view"
+                            data-name="<%= association.name %>"
+                            data-description="<%= association.description || '' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/>
+                        <circle cx="12" cy="12" r="2.8"/>
+                      </svg>
+                      <span class="iconbtn__text">Voir</span>
+                    </button>
+
+                    <button type="button" class="iconbtn"
+                            aria-label="Modifier <%= association.name %>" title="Modifier"
+                            data-modal-open="modal-edit"
+                            data-id="<%= association.id %>"
+                            data-name="<%= association.name %>"
+                            data-description="<%= association.description || '' %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4 20h4L19 9l-4-4L4 16v4Z" stroke-linejoin="round"/><path d="M14.5 5.5 18.5 9.5" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Modifier</span>
+                    </button>
+
+                    <button type="button" class="iconbtn iconbtn--danger"
+                            aria-label="Supprimer <%= association.name %>" title="Supprimer"
+                            data-modal-open="modal-delete"
+                            data-id="<%= association.id %>"
+                            data-name="<%= association.name %>">
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M4.5 6.5h15M9.5 6.5V4.8h5v1.7M6.5 6.5 7.4 20h9.2l.9-13.5" stroke-linejoin="round"/>
+                        <path d="M10.2 10v6.4M13.8 10v6.4" stroke-linecap="round"/>
+                      </svg>
+                      <span class="iconbtn__text">Supprimer</span>
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="empty empty--inline" id="no-match" hidden>
+          <span class="empty__title">Aucune association ne correspond à cette recherche.</span>
+        </p>
+
+      <% } %>
+    </section>
+
+  </div>
+</main>
+
+
+<!-- =================== MODALE « NOUVELLE ASSOCIATION » ================ -->
+<dialog class="modal modal--form" id="modal-create" aria-labelledby="modal-create-title">
+  <form method="POST" action="/associations" class="modal__form" novalidate>
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-create-title">Nouvelle association</h2>
+        <p class="modal__sub">Renseignez les informations de l’association à ajouter au répertoire.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+      <fieldset class="fset">
+        <legend class="fset__legend">Identification</legend>
+        <div class="grid grid--1">
+          <div class="field">
+            <label for="create-name">Nom de l’association</label>
+            <input type="text" id="create-name" name="name" required maxlength="150" placeholder="Club Sportif Municipal">
+            <p class="field__error" data-error-for="create-name" hidden>Le nom de l’association est obligatoire.</p>
+          </div>
+          <div class="field">
+            <label for="create-description">Description</label>
+            <textarea id="create-description" name="description" rows="4" placeholder="Présentation de l’association, disciplines proposées, contact…"></textarea>
+            <p class="field__hint">Facultatif — laissez vide si vous n’avez pas encore l’information.</p>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Créer l’association</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ==================== MODALE MODIFICATION ==================== -->
+<dialog class="modal modal--form" id="modal-edit" aria-labelledby="modal-edit-title">
+  <form method="POST" action="/associations/update" class="modal__form" novalidate>
+    <input type="hidden" name="id" id="edit-id">
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-edit-title">Modifier l’association</h2>
+        <p class="modal__sub" id="modal-edit-sub">Mettez à jour les informations de l’association.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+      <fieldset class="fset">
+        <legend class="fset__legend">Identification</legend>
+        <div class="grid grid--1">
+          <div class="field">
+            <label for="edit-name">Nom de l’association</label>
+            <input type="text" id="edit-name" name="name" required maxlength="150">
+            <p class="field__error" data-error-for="edit-name" hidden>Le nom de l’association est obligatoire.</p>
+          </div>
+          <div class="field">
+            <label for="edit-description">Description</label>
+            <textarea id="edit-description" name="description" rows="4"></textarea>
+            <p class="field__hint">Facultatif — laissez vide si vous n’avez pas encore l’information.</p>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ====================== MODALE DÉTAILS (lecture) =================== -->
+<dialog class="modal modal--view" id="modal-view" aria-labelledby="modal-view-title">
+  <header class="modal__head">
+    <div>
+      <h2 class="modal__title" id="modal-view-title">Fiche association</h2>
+    </div>
+    <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="modal__body">
+    <div class="assoc-fiche">
+      <span class="avatar avatar--lg" id="view-avatar" aria-hidden="true">—</span>
+      <h3 class="assoc-fiche__name" id="view-name">—</h3>
+    </div>
+
+    <dl class="detail">
+      <div>
+        <dt>Description</dt>
+        <dd id="view-description">—</dd>
+      </div>
+    </dl>
+  </div>
+
+  <footer class="modal__foot">
+    <button type="button" class="btn btn--ghost" data-modal-close>Fermer</button>
+  </footer>
+</dialog>
+
+
+<!-- =================== MODALE CONFIRMATION SUPPRESSION ================ -->
+<dialog class="modal modal--confirm" id="modal-delete" aria-labelledby="modal-delete-title">
+  <form method="POST" action="/associations/delete" class="modal__form">
+    <input type="hidden" name="id" id="delete-id">
+
+    <div class="confirm">
+      <span class="confirm__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 8.5v5" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1.1" fill="currentColor" stroke="none"/>
+          <path d="M10.6 3.9 2.9 17.4A1.6 1.6 0 0 0 4.3 19.8h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 3.9a1.6 1.6 0 0 0-2.8 0Z" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div>
+        <h2 class="confirm__title" id="modal-delete-title">Supprimer cette association&nbsp;?</h2>
+        <p class="confirm__text">
+          <span id="delete-name" class="confirm__target">Cette association</span> sera retirée du répertoire. Cette action est irréversible.
+        </p>
+      </div>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--danger">Supprimer</button>
+    </footer>
+
+  </form>
+</dialog>
+
+<script src="/js/associations.js" defer></script>
 </body>
-
 </html>

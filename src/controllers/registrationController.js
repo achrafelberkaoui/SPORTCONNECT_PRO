@@ -50,34 +50,57 @@ async function index(req, res) {
 
 async function create(req, res) {
     try {
-        const {
-            member_id,
-            activity_id,
-            payment_plan
-        } = req.body;
 
-        await registrationService.createRegistration(
-            Number(member_id),
-            Number(activity_id),
-            payment_plan
+        const memberId = Number(req.body.member_id);
+        const activityId = Number(req.body.activity_id);
+        const paymentPlan = req.body.payment_plan;
+
+        const result = await registrationService.createRegistration(
+            memberId,
+            activityId,
+            paymentPlan
         );
-        
-        if (result.waiting) {
-            res.statusCode = 302;
-            res.setHeader('Location', '/registrations?waiting=1');
-            return res.end();
-        }
+
+        console.log('Résultat inscription :', result);
 
         res.statusCode = 302;
         res.setHeader('Location', '/registrations');
         res.end();
 
     } catch (error) {
-        console.error(error);
 
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end(error.message);
+        console.error('ERREUR INSCRIPTION :', error);
+
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+        res.end(`
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <title>Erreur inscription</title>
+            </head>
+
+            <body style="
+                font-family: Arial;
+                padding: 40px;
+                background: #f5f5f5;
+            ">
+
+                <h1>Erreur lors de l'inscription</h1>
+
+                <p>
+                    ${error.message}
+                </p>
+
+                <a href="/registrations">
+                    Retour aux inscriptions
+                </a>
+
+            </body>
+            </html>
+        `);
     }
 }
 

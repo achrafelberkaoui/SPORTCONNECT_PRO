@@ -2,14 +2,414 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>SportConnect Pro</title>
+
+    <link rel="stylesheet" href="/css/home.css">
 </head>
 
 <body>
 
-    <h1>SportConnect Pro</h1>
+<div class="app">
 
-    <p>Bienvenue <%= name %></p>
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo">
+                SC
+            </div>
+
+            <div class="brand-text">
+                <strong>SportConnect</strong>
+                <span>PRO</span>
+            </div>
+        </div>
+
+        <nav class="navigation">
+
+            <a href="/" class="nav-item active">
+                <span class="nav-icon">⌂</span>
+                <span>Accueil</span>
+            </a>
+
+            <a href="/dashboard" class="nav-item">
+                <span class="nav-icon">▦</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/activities" class="nav-item">
+                <span class="nav-icon">⚽</span>
+                <span>Activités</span>
+            </a>
+
+            <a href="/facilities" class="nav-item">
+                <span class="nav-icon">▣</span>
+                <span>Infrastructures</span>
+            </a>
+
+            <a href="/associations" class="nav-item">
+                <span class="nav-icon">♙</span>
+                <span>Associations</span>
+            </a>
+
+            <a href="/members" class="nav-item">
+                <span class="nav-icon">♟</span>
+                <span>Membres</span>
+            </a>
+
+            <a href="/families" class="nav-item">
+                <span class="nav-icon">⌂</span>
+                <span>Familles</span>
+            </a>
+
+            <a href="/registrations" class="nav-item">
+                <span class="nav-icon">✓</span>
+                <span>Inscriptions</span>
+            </a>
+<!-- 
+            <a href="/waiting-list" class="nav-item">
+                <span class="nav-icon">◷</span>
+                <span>Liste d'attente</span>
+            </a> -->
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-dot"></div>
+            <div>
+                <strong>Système opérationnel</strong>
+                <span>SportConnect Pro</span>
+            </div>
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div>
+                <span class="topbar-label">PLATEFORME DE GESTION SPORTIVE</span>
+                <h1>SportConnect Pro</h1>
+            </div>
+
+            <div class="topbar-actions">
+
+                <a href="/dashboard" class="dashboard-btn">
+                    <span>▦</span>
+                    Ouvrir le dashboard
+                </a>
+
+                <div class="profile">
+                    <div class="profile-avatar">
+                        SC
+                    </div>
+
+                    <div class="profile-info">
+                        <strong>Administration</strong>
+                        <span>Gestionnaire</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= HERO ================= -->
+
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <span class="hero-badge">
+                    ● Plateforme active
+                </span>
+
+                <h2>
+                    Gérez votre écosystème
+                    <span>sportif</span> simplement.
+                </h2>
+
+                <p>
+                    Centralisez les activités, les membres, les associations,
+                    les infrastructures et les inscriptions depuis une seule
+                    plateforme.
+                </p>
+
+                <div class="hero-actions">
+
+                    <a href="/dashboard" class="primary-btn">
+                        Accéder au dashboard
+                        <span>→</span>
+                    </a>
+
+                    <a href="/activities" class="secondary-btn">
+                        Voir les activités
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-visual">
+
+                <div class="visual-card main-card">
+
+                    <div class="visual-header">
+                        <div>
+                            <span>Vue globale</span>
+                            <strong>SportConnect</strong>
+                        </div>
+
+                        <div class="live-indicator">
+                            <span></span>
+                            Live
+                        </div>
+                    </div>
+
+                    <div class="visual-chart">
+
+                        <div class="chart-bar bar-1"></div>
+                        <div class="chart-bar bar-2"></div>
+                        <div class="chart-bar bar-3"></div>
+                        <div class="chart-bar bar-4"></div>
+                        <div class="chart-bar bar-5"></div>
+                        <div class="chart-bar bar-6"></div>
+                        <div class="chart-bar bar-7"></div>
+
+                    </div>
+
+                    <div class="visual-footer">
+                        <span>Gestion sportive</span>
+                        <strong>Centralisée</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="floating-card floating-one">
+                    <span class="floating-icon">⚽</span>
+                    <div>
+                        <strong>Activités</strong>
+                        <small>Gestion simplifiée</small>
+                    </div>
+                </div>
+
+
+                <div class="floating-card floating-two">
+                    <span class="floating-icon">✓</span>
+                    <div>
+                        <strong>Inscriptions</strong>
+                        <small>Suivi en temps réel</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= MODULES ================= -->
+
+        <section class="modules-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <span>MODULES</span>
+                    <h3>Tout votre sport, au même endroit</h3>
+                </div>
+
+                <p>
+                    Accédez rapidement aux principales fonctionnalités
+                    de la plateforme.
+                </p>
+
+            </div>
+
+
+            <div class="modules-grid">
+
+                <a href="/activities" class="module-card">
+
+                    <div class="module-icon blue">
+                        ⚽
+                    </div>
+
+                    <div class="module-content">
+                        <h4>Activités</h4>
+                        <p>
+                            Planifiez et gérez les activités sportives.
+                        </p>
+                    </div>
+
+                    <span class="module-arrow">→</span>
+
+                </a>
+
+
+                <a href="/members" class="module-card">
+
+                    <div class="module-icon purple">
+                        ♟
+                    </div>
+
+                    <div class="module-content">
+                        <h4>Membres</h4>
+                        <p>
+                            Gérez les adhérents et leurs informations.
+                        </p>
+                    </div>
+
+                    <span class="module-arrow">→</span>
+
+                </a>
+
+
+                <a href="/families" class="module-card">
+
+                    <div class="module-icon orange">
+                        ⌂
+                    </div>
+
+                    <div class="module-content">
+                        <h4>Familles</h4>
+                        <p>
+                            Gérez les familles et le quotient familial.
+                        </p>
+                    </div>
+
+                    <span class="module-arrow">→</span>
+
+                </a>
+
+
+                <a href="/facilities" class="module-card">
+
+                    <div class="module-icon green">
+                        ▣
+                    </div>
+
+                    <div class="module-content">
+                        <h4>Infrastructures</h4>
+                        <p>
+                            Suivez les équipements et leurs capacités.
+                        </p>
+                    </div>
+
+                    <span class="module-arrow">→</span>
+
+                </a>
+
+
+                <a href="/associations" class="module-card">
+
+                    <div class="module-icon pink">
+                        ♙
+                    </div>
+
+                    <div class="module-content">
+                        <h4>Associations</h4>
+                        <p>
+                            Administrez les associations sportives.
+                        </p>
+                    </div>
+
+                    <span class="module-arrow">→</span>
+
+                </a>
+
+
+                <a href="/registrations" class="module-card">
+
+                    <div class="module-icon cyan">
+                        ✓
+                    </div>
+
+                    <div class="module-content">
+                        <h4>Inscriptions</h4>
+                        <p>
+                            Suivez les inscriptions et les paiements.
+                        </p>
+                    </div>
+
+                    <span class="module-arrow">→</span>
+
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= QUICK ACCESS ================= -->
+
+        <section class="quick-section">
+
+            <div class="quick-card">
+
+                <div class="quick-icon">
+                    ◷
+                </div>
+
+                <div class="quick-content">
+
+                    <span>GESTION DES PLACES</span>
+
+                    <h3>
+                        Consultez les participants en liste d'attente
+                    </h3>
+
+                    <p>
+                        Identifiez rapidement les demandes en attente
+                        et les promotions nécessitant une confirmation.
+                    </p>
+
+                </div>
+
+                <a href="/waiting-list" class="quick-btn">
+                    Voir la liste
+                    <span>→</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= FOOTER ================= -->
+
+        <footer class="footer">
+
+            <span>
+                SportConnect Pro
+            </span>
+
+            <span>
+                Plateforme de gestion sportive
+            </span>
+
+            <span>
+                © 2026
+            </span>
+
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="/js/home.js"></script>
 
 </body>
 </html>

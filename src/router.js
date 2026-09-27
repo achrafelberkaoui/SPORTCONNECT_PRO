@@ -1,5 +1,5 @@
 const router = require('find-my-way')();
-
+const rendder = require('../src/utils/renderer')
 const homeController = require('./controllers/homeController');
 const facilityController = require('./controllers/facilityController');
 const associationController = require('./controllers/associationController');
@@ -8,7 +8,13 @@ const memberController = require('./controllers/memberController');
 const familyController = require('./controllers/familyController');
 const registrationController = require('./controllers/registrationController');
 const waitingListController = require('./controllers/waitingListController');
-router.on('GET', '/', homeController.index);
+
+const dashboardController = require('./controllers/dashboardController');
+const { render } = require('ejs');
+
+router.on('GET', '/', (req, res) => {
+    rendder(res, 'home');
+});
 
 //activities
 router.on('GET','/activities',activityController.index);
@@ -27,11 +33,6 @@ router.on('GET', '/facilities', facilityController.index);
 router.on('POST', '/facilities', facilityController.create);
 router.on('POST', '/facilities/update', facilityController.update);
 router.on('POST', '/facilities/delete', facilityController.remove);
-router.on('POST', '/test', (req, res) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(`bonjour ${req.body.name}` );
-});
 
 //associations
 router.on('GET', '/associations', associationController.index);
@@ -52,6 +53,9 @@ router.on('POST','/registrations',registrationController.create);
 //waiting-list
 router.on('GET','/activities/:id/waiting-list',waitingListController.index);
 router.on('POST','/waiting-list/confirm',waitingListController.confirm);
+
+//dashboard
+router.on('GET','/dashboard',dashboardController.index);
 
 //exports
 module.exports = router;

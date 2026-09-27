@@ -9,7 +9,8 @@ async function index(req, res,params) {
             await waitingListService.getWaitingList(activityId);
 
         render(res, 'waiting-list', {
-            waitingList
+            waitingList,
+            activityId
         });
 
     } catch (error) {

@@ -1,196 +1,693 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Dashboard - SportConnect Pro</title>
+  <title>Dashboard — SportConnect Pro</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 
-        h1 {
-            margin-bottom: 30px;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .card {
-            border: 1px solid #ddd;
-            padding: 25px;
-            border-radius: 10px;
-        }
-
-        .card h2 {
-            margin-top: 0;
-        }
-
-        .number {
-            font-size: 32px;
-            font-weight: bold;
-        }
-    </style>
+  <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 
 <body>
 
-    <h1>Dashboard SportConnect Pro</h1>
+<%
+  /*
+    Variables utilisées :
+    - stats
+    - activities
+    - upcomingActivities
 
-    <div class="dashboard">
+    Les noms des propriétés correspondent au Dashboard
+    déjà préparé côté backend.
+  */
 
-        <div class="card">
-            <h2>Membres</h2>
-            <div class="number">
-                <%= stats.members %>
-            </div>
-        </div>
+  const safeStats = stats || {};
 
-        <div class="card">
-            <h2>Familles</h2>
-            <div class="number">
-                <%= stats.families %>
-            </div>
-        </div>
+  const totalMembers = safeStats.members ?? 0;
+  const totalFamilies = safeStats.families ?? 0;
+  const totalFacilities = safeStats.facilities ?? 0;
+  const totalAssociations = safeStats.associations ?? 0;
+  const totalActivities = safeStats.activities ?? 0;
+  const totalRegistrations = safeStats.registrations ?? 0;
+  const totalWaiting = safeStats.waitingList ?? 0;
 
-        <div class="card">
-            <h2>Associations</h2>
-            <div class="number">
-                <%= stats.associations %>
-            </div>
-        </div>
+  const listActivities = Array.isArray(activities) ? activities : [];
+  const listUpcoming = Array.isArray(upcomingActivities)
+    ? upcomingActivities
+    : [];
 
-        <div class="card">
-            <h2>Équipements</h2>
-            <div class="number">
-                <%= stats.facilities %>
-            </div>
-        </div>
+  const pad = (n) => String(n).padStart(2, '0');
 
-        <div class="card">
-            <h2>Activités</h2>
-            <div class="number">
-                <%= stats.activities %>
-            </div>
-        </div>
+  const formatDate = (value) => {
+    if (!value) return '—';
 
-        <div class="card">
-            <h2>Inscriptions</h2>
-            <div class="number">
-                <%= stats.registrations %>
-            </div>
-        </div>
+    const d = new Date(value);
 
-        <div class="card">
-            <h2>Liste d'attente</h2>
-            <div class="number">
-                <%= stats.waitingList %>
-            </div>
-        </div>
+    if (Number.isNaN(d.getTime())) return '—';
 
-    </div>
-    <h2>Remplissage des activités</h2>
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  };
 
-<table border="1" cellpadding="10">
-    <thead>
-        <tr>
-            <th>Activité</th>
-            <th>Inscrits</th>
-            <th>Capacité</th>
-            <th>Remplissage</th>
-        </tr>
-    </thead>
+  const formatTime = (value) => {
+    if (!value) return '—';
+    return String(value).slice(0, 5);
+  };
 
-    <tbody>
+  const occupancy = (activity) => {
+    const value = Number(
+      activity.occupancy_percentage ??
+      activity.occupancyPercent ??
+      activity.occupancy ??
+      0
+    );
 
-        <% activities.forEach(activity => { %>
+    return Math.min(100, Math.max(0, value));
+  };
 
-            <tr>
+  const confirmed = (activity) => Number(
+    activity.confirmed_count ??
+    activity.confirmedCount ??
+    activity.registered_count ??
+    activity.registrations_count ??
+    0
+  );
 
-                <td>
-                    <%= activity.name %>
-                </td>
+  const capacity = (activity) => Number(
+    activity.max_capacity ??
+    activity.capacity ??
+    0
+  );
+%>
 
-                <td>
-                    <%= activity.registeredCount %>
-                </td>
+<a class="skip-link" href="#contenu">
+  Aller au contenu principal
+</a>
 
-                <td>
-                    <%= activity.maxCapacity %>
-                </td>
+<header class="topbar">
 
-                <td>
-                    <%= activity.occupancy %> %
-                </td>
+  <div class="topbar__inner">
 
-            </tr>
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"
+             width="20"
+             height="20"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="1.7">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+        </svg>
+      </span>
 
-        <% }); %>
-
-    </tbody>
-</table>
-<h2>Prochaines activités</h2>
-
-<table border="1" cellpadding="10">
-
-    <thead>
-        <tr>
-            <th>Activité</th>
-            <th>Date</th>
-            <th>Horaire</th>
-            <th>Équipement</th>
-            <th>Association</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        <% upcomingActivities.forEach(activity => { %>
-
-            <tr>
-
-                <td>
-                    <%= activity.name %>
-                </td>
-
-                <td>
-                    <%= activity.activity_date %>
-                </td>
-
-                <td>
-                    <%= activity.start_time %>
-                    -
-                    <%= activity.end_time %>
-                </td>
-
-                <td>
-                    <%= activity.facility_name %>
-                </td>
-
-                <td>
-                    <%= activity.association_name %>
-                </td>
-
-            </tr>
-
-        <% }); %>
-
-    </tbody>
-
-</table>
-
-    <br>
-
-    <a href="/">
-        Retour à l'accueil
+      <span class="brand__name">
+        SportConnect Pro
+      </span>
     </a>
 
-</body>
+    <nav class="mainnav" aria-label="Navigation principale">
 
+      <ul class="mainnav__list">
+
+        <li>
+          <a class="navlink is-active"
+             href="/dashboard"
+             aria-current="page">
+            Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a class="navlink" href="/activities">
+            Activités
+          </a>
+        </li>
+
+        <li>
+          <a class="navlink" href="/facilities">
+            Infrastructures
+          </a>
+        </li>
+
+        <li>
+          <a class="navlink" href="/associations">
+            Associations
+          </a>
+        </li>
+
+        <li>
+          <a class="navlink" href="/members">
+            Membres
+          </a>
+        </li>
+
+        <li>
+          <a class="navlink" href="/families">
+            families
+          </a>
+        </li>
+
+        <li>
+          <span class="navlink" href="/registrations">
+            Inscriptions
+            <!-- <span class="soon">à venir</span> -->
+          </span>
+        </li>
+
+        <li>
+        <!-- <li>
+            <a class="navlink" href="/waiting-list">
+                <span>Liste d’attente</span>
+            </a>
+        </li> -->
+        </li>
+
+      </ul>
+
+    </nav>
+
+    <div class="topbar__user">
+
+      <span class="user-chip">
+
+        <span class="user-chip__avatar">
+          SG
+        </span>
+
+        <span class="user-chip__text">
+
+          <span class="user-chip__name">
+            Service des sports
+          </span>
+
+          <span class="user-chip__role">
+            Gestionnaire
+          </span>
+
+        </span>
+
+      </span>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+<main id="contenu" class="page">
+
+  <div class="wrap">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="pagehead">
+
+      <div>
+
+        <h1 class="pagehead__title">
+          Tableau de bord
+        </h1>
+
+        <p class="pagehead__sub">
+          Vue d’ensemble de la gestion sportive et associative.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================= STATISTIQUES ================= -->
+
+    <section class="stats" aria-label="Chiffres clés">
+
+      <article class="stat">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <circle cx="9" cy="8" r="3"/>
+            <path d="M3.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+            <path d="M16 11a3 3 0 1 0 0-6"/>
+            <path d="M16 15c2.7 0 4.5 1.8 4.5 5"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalMembers %>
+        </span>
+
+        <span class="stat__label">
+          Membres
+        </span>
+
+      </article>
+
+
+      <article class="stat">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <circle cx="9" cy="8" r="3"/>
+            <circle cx="16" cy="10" r="2.5"/>
+            <path d="M3.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+            <path d="M14 20c0-2 1.5-3.5 3.5-3.5S21 18 21 20"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalFamilies %>
+        </span>
+
+        <span class="stat__label">
+          Familles
+        </span>
+
+      </article>
+
+
+      <article class="stat">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <path d="M4 20V8l8-4 8 4v12"/>
+            <path d="M2.5 20h19"/>
+            <path d="M8 20v-5h3v5M14 20v-5h3v5"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalFacilities %>
+        </span>
+
+        <span class="stat__label">
+          Infrastructures
+        </span>
+
+      </article>
+
+
+      <article class="stat">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <circle cx="8" cy="8" r="3"/>
+            <circle cx="16" cy="8" r="3"/>
+            <path d="M2.5 20c0-3 2.5-5 5.5-5"/>
+            <path d="M21.5 20c0-3-2.5-5-5.5-5"/>
+            <path d="M8 15c1.2-.7 2.2-1 4-1s2.8.3 4 1"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalAssociations %>
+        </span>
+
+        <span class="stat__label">
+          Associations
+        </span>
+
+      </article>
+
+
+      <article class="stat">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2"/>
+            <path d="M3.5 9.5h17"/>
+            <path d="M8 13h8M8 16h5"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalActivities %>
+        </span>
+
+        <span class="stat__label">
+          Activités
+        </span>
+
+      </article>
+
+
+      <article class="stat">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <path d="M5 4.5h14v15H5z"/>
+            <path d="M8 8h8M8 12h8M8 16h5"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalRegistrations %>
+        </span>
+
+        <span class="stat__label">
+          Inscriptions
+        </span>
+
+      </article>
+
+
+      <article class="stat stat--attention">
+
+        <span class="stat__icon">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.7">
+            <path d="M12 3.5 21 20H3z"
+                  stroke-linejoin="round"/>
+            <path d="M12 9v5"
+                  stroke-linecap="round"/>
+            <circle cx="12" cy="17.5" r="1"/>
+          </svg>
+        </span>
+
+        <span class="stat__value">
+          <%= totalWaiting %>
+        </span>
+
+        <span class="stat__label">
+          Liste d’attente
+        </span>
+
+      </article>
+
+    </section>
+
+
+    <!-- ================= ACTIVITÉS ================= -->
+
+    <section class="panel">
+
+      <div class="section-head">
+
+        <div>
+
+          <h2 class="section-title">
+            Occupation des activités
+          </h2>
+
+          <p class="section-sub">
+            Suivi des capacités et des inscriptions.
+          </p>
+
+        </div>
+
+        <a class="btn btn--ghost"
+           href="/activities">
+          Voir les activités
+        </a>
+
+      </div>
+
+
+      <% if (listActivities.length === 0) { %>
+
+        <div class="empty">
+
+          <p class="empty__title">
+            Aucune activité disponible.
+          </p>
+
+          <p class="empty__text">
+            Les données d’occupation apparaîtront ici.
+          </p>
+
+        </div>
+
+      <% } else { %>
+
+        <div class="table-scroll">
+
+          <table class="table">
+
+            <thead>
+
+              <tr>
+                <th>Activité</th>
+                <th>Association</th>
+                <th>Infrastructure</th>
+                <th>Inscrits</th>
+                <th>Capacité</th>
+                <th>Occupation</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <% listActivities.forEach(activity => { %>
+
+                <%
+                  const percent = occupancy(activity);
+                  const registered = confirmed(activity);
+                  const max = capacity(activity);
+                %>
+
+                <tr>
+
+                  <td data-label="Activité">
+
+                    <span class="cell-title">
+                      <%= activity.name || activity.activity_name || '—' %>
+                    </span>
+
+                  </td>
+
+
+                  <td data-label="Association">
+
+                    <%= activity.association_name || '—' %>
+
+                  </td>
+
+
+                  <td data-label="Infrastructure">
+
+                    <%= activity.facility_name || '—' %>
+
+                  </td>
+
+
+                  <td data-label="Inscrits" class="num">
+
+                    <%= registered %>
+
+                  </td>
+
+
+                  <td data-label="Capacité" class="num">
+
+                    <%= max %>
+
+                  </td>
+
+
+                  <td data-label="Occupation">
+
+                    <div class="occupancy">
+
+                      <div class="occupancy__top">
+
+                        <span>
+                          <%= percent.toFixed(0) %>%
+                        </span>
+
+                      </div>
+
+                      <div class="progress">
+
+                        <div
+                          class="progress__bar"
+                          style="width:<%= percent %>%">
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              <% }); %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      <% } %>
+
+    </section>
+
+
+    <!-- ================= PROCHAINES ACTIVITÉS ================= -->
+
+    <section class="panel upcoming-panel">
+
+      <div class="section-head">
+
+        <div>
+
+          <h2 class="section-title">
+            Prochaines activités
+          </h2>
+
+          <p class="section-sub">
+            Les prochaines activités programmées.
+          </p>
+
+        </div>
+
+        <a class="btn btn--ghost"
+           href="/activities">
+          Planning complet
+        </a>
+
+      </div>
+
+
+      <% if (listUpcoming.length === 0) { %>
+
+        <div class="empty">
+
+          <p class="empty__title">
+            Aucune activité à venir.
+          </p>
+
+          <p class="empty__text">
+            Le planning est actuellement vide.
+          </p>
+
+        </div>
+
+      <% } else { %>
+
+        <div class="upcoming-list">
+
+          <% listUpcoming.forEach(activity => { %>
+
+            <article class="upcoming-card">
+
+              <div class="upcoming-card__date">
+
+                <span class="date-day">
+                  <%= activity.activity_date
+                    ? new Date(activity.activity_date).getDate()
+                    : '—' %>
+                </span>
+
+                <span class="date-month">
+                  <%= activity.activity_date
+                    ? new Date(activity.activity_date)
+                        .toLocaleDateString('fr-FR', { month: 'short' })
+                    : '' %>
+                </span>
+
+              </div>
+
+
+              <div class="upcoming-card__content">
+
+                <h3>
+                  <%= activity.name || activity.activity_name || 'Activité' %>
+                </h3>
+
+                <p>
+
+                  <span>
+                    <%= formatTime(activity.start_time) %>
+                    –
+                    <%= formatTime(activity.end_time) %>
+                  </span>
+
+                  <span class="separator">•</span>
+
+                  <span>
+                    <%= activity.facility_name || 'Infrastructure —' %>
+                  </span>
+
+                </p>
+
+                <span class="upcoming-card__association">
+                  <%= activity.association_name || 'Association —' %>
+                </span>
+
+              </div>
+
+
+              <div class="upcoming-card__action">
+
+                <a href="/activities"
+                   class="iconbtn"
+                   title="Voir les activités">
+
+                  <svg viewBox="0 0 24 24"
+                       width="17"
+                       height="17"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="1.7">
+
+                    <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/>
+
+                    <circle cx="12" cy="12" r="2.8"/>
+
+                  </svg>
+
+                  <span class="iconbtn__text">
+                    Voir
+                  </span>
+
+                </a>
+
+              </div>
+
+            </article>
+
+          <% }); %>
+
+        </div>
+
+      <% } %>
+
+    </section>
+
+  </div>
+
+</main>
+
+
+<script src="../public/js/dashboard.js" defer></script>
+
+</body>
 </html>

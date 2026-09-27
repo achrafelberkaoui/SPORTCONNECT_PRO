@@ -1,134 +1,436 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Inscriptions - SportConnect Pro</title>
-</head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscriptions — SportConnect Pro</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/registrations.css">
+</head>
 <body>
 
-    <h1>Inscriptions</h1>
+<%
+/* --------------------------------------------------------------
+   Variables fournies par registrationController.index :
+     members       -> { id, first_name, last_name }
+     activities    -> { id, name, activity_date, start_time }
+     registrations -> { id, final_price, payment_plan, status,
+                         first_name, last_name, activity_name }
+   Aucune autre donnée n'est disponible : pas d'id membre/activité
+   sur la ligne d'inscription, pas de route de modification ou de
+   suppression (le contrôleur n'exporte que index et create).
+-------------------------------------------------------------- */
 
-    <h2>Nouvelle inscription</h2>
+const memberList       = members || [];
+const activityList     = activities || [];
+const registrationList = registrations || [];
 
-    <form method="POST" action="/registrations">
+const toDate = (d) => {
+  if (!d) return null;
+  const x = (d instanceof Date) ? d : new Date(d);
+  return isNaN(x.getTime()) ? null : x;
+};
+const pad = (n) => ('0' + n).slice(-2);
+const fmtDate = (d) => {
+  const x = toDate(d);
+  return x ? pad(x.getDate()) + '/' + pad(x.getMonth() + 1) + '/' + x.getFullYear() : '—';
+};
+const fmtTime = (t) => t ? String(t).slice(0, 5) : '—';
 
-        <div>
-            <label>
-                Membre :
+const fmtPrice = (p) => (p === null || p === undefined || p === '') ? '—' : Number(p).toFixed(2) + ' €';
 
-                <select name="member_id" required>
+// "1x" -> "En 1 fois" ; toute autre valeur est affichée telle quelle
+const fmtPaymentPlan = (plan) => {
+  if (!plan) return '—';
+  const match = String(plan).match(/^(\d+)\s*x$/i);
+  return match ? 'En ' + match[1] + ' fois' : plan;
+};
 
-                    <option value="">
-                        Choisir un membre
-                    </option>
+// Libellés lisibles pour les statuts réellement produits par registrationService
+const STATUS_LABELS = {
+  confirmed: 'Confirmée',
+  medical_non_compliant: 'Non conforme médicalement',
+  cancelled: 'Annulée'
+};
+const statusLabel = (s) => STATUS_LABELS[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+const statusClass = (s) => ({
+  confirmed: 'badge--confirmed',
+  medical_non_compliant: 'badge--medical',
+  cancelled: 'badge--cancelled'
+}[s] || 'badge--neutral');
 
-                    <% members.forEach(member => { %>
+/* Statistiques calculées uniquement à partir de registrations */
+const total       = registrationList.length;
+const confirmed   = registrationList.filter(r => r.status === 'confirmed').length;
+const nonCompliant = registrationList.filter(r => r.status === 'medical_non_compliant').length;
+const otherStatus  = total - confirmed - nonCompliant; // annulées + tout statut non listé ci-dessus
+const totalCollected = registrationList
+  .filter(r => r.status === 'confirmed')
+  .reduce((sum, r) => sum + Number(r.final_price || 0), 0);
 
-                        <option value="<%= member.id %>">
-                            <%= member.first_name %>
-                            <%= member.last_name %>
-                        </option>
+// Options de filtre par statut : uniquement les valeurs réellement présentes dans les données
+const distinctStatuses = [...new Set(registrationList.map(r => r.status).filter(Boolean))];
 
-                    <% }); %>
+// Libellé d'activité pour le <select> du formulaire de création
+const activityOptionLabel = (a) => a.name + ' — ' + fmtDate(a.activity_date) + ' ' + fmtTime(a.start_time);
+%>
 
-                </select>
-            </label>
-        </div>
+<a class="skip-link" href="#contenu">Aller au contenu principal</a>
 
-        <div>
-            <label>
-                Activité :
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="topbar__inner">
 
-                <select name="activity_id" required>
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand__name">SportConnect Pro</span>
+    </a>
 
-                    <option value="">
-                        Choisir une activité
-                    </option>
+    <nav class="mainnav" aria-label="Navigation principale">
+      <ul class="mainnav__list">
 
-                    <% activities.forEach(activity => { %>
+        <li><a class="navlink" href="/dashboard">Dashboard</a></li>
+        <li><a class="navlink" href="/activities">Activités</a></li>
+        <li><a class="navlink" href="/facilities">Infrastructures</a></li>
+        <li><a class="navlink" href="/associations">Associations</a></li>
+        <li><a class="navlink" href="/members">Membres</a></li>
+        <li><a class="navlink" href="/families">families</a></li>
+        <li><a class="navlink" href="/registrations">Inscriptions</a></li>
 
-                        <option value="<%= activity.id %>">
-                            <%= activity.name %>
-                            -
-                            <%= activity.activity_date %>
-                            -
-                            <%= activity.start_time %>
-                        </option>
+        <!-- <li><span class="navlink is-soon" aria-disabled="true">Liste d’attente<span class="soon">à venir</span></span></li> -->
+      </ul>
+    </nav>
 
-                    <% }); %>
+    <div class="topbar__user">
+      <span class="user-chip">
+        <span class="user-chip__avatar" aria-hidden="true">SG</span>
+        <span class="user-chip__text">
+          <span class="user-chip__name">Service des sports</span>
+          <span class="user-chip__role">Gestionnaire</span>
+        </span>
+      </span>
+    </div>
 
-                </select>
-            </label>
-        </div>
+  </div>
+</header>
 
-        <div>
-            <label>
-                Paiement :
+<main id="contenu" class="page">
+  <div class="wrap">
 
-                <select name="payment_plan" required>
-                    <option value="1x">1 fois</option>
-                    <option value="3x">3 fois</option>
-                </select>
+    <!-- Bandeau affiché uniquement si l'URL contient ?waiting=1
+         (redirection déjà produite par registrationController.create).
+         Lu côté client car le contrôleur ne transmet pas ce drapeau à la vue. -->
+    <div class="notice notice--info" id="waiting-banner" role="status" hidden>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.2v.1" stroke-linecap="round"/>
+      </svg>
+      <span>La capacité maximale de cette activité est atteinte : la personne a été placée en liste d’attente.</span>
+      <button type="button" class="notice__close" id="waiting-banner-close" aria-label="Fermer ce message">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
 
-            </label>
-        </div>
-
-        <button type="submit">
-            Inscrire
+    <!-- ======================= EN-TÊTE DE PAGE ======================= -->
+    <div class="pagehead">
+      <div>
+        <h1 class="pagehead__title">Inscriptions</h1>
+        <p class="pagehead__sub">Suivez les inscriptions aux activités et enregistrez-en de nouvelles.</p>
+      </div>
+      <div class="pagehead__actions">
+        <button type="button" class="btn btn--primary" data-modal-open="modal-create"
+                <%= (memberList.length === 0 || activityList.length === 0) ? 'disabled' : '' %>>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+          </svg>
+          Nouvelle inscription
         </button>
-
-    </form>
-
-
-    <h2>Inscriptions existantes</h2>
-
-    <% if (registrations.length === 0) { %>
-
-        <p>
-            Aucune inscription.
-        </p>
-
+      </div>
+    </div>
+    <% if (memberList.length === 0 || activityList.length === 0) { %>
+      <p class="pagehead__note">
+        <% if (memberList.length === 0) { %>Aucun membre enregistré. <% } %>
+        <% if (activityList.length === 0) { %>Aucune activité enregistrée. <% } %>
+        Ajoutez-les avant de créer une inscription.
+      </p>
     <% } %>
 
+    <!-- ===================== STATISTIQUES RAPIDES ==================== -->
+    <!-- Uniquement des chiffres calculés à partir de `registrations`. -->
+    <section class="stats" aria-label="Chiffres clés">
 
-    <% registrations.forEach(registration => { %>
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2"/>
+            <path d="M3.5 9.5h17M8 13h8M8 16h5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= total %></span>
+        <span class="stat__label">Inscriptions enregistrées</span>
+      </article>
 
-        <article>
+      <article class="stat">
+        <span class="stat__icon stat__icon--turf" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M4 12.5l4.5 4.5L20 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= confirmed %></span>
+        <span class="stat__label">Confirmées</span>
+      </article>
 
-            <p>
-                <strong>Membre :</strong>
-                <%= registration.first_name %>
-                <%= registration.last_name %>
-            </p>
+      <article class="stat">
+        <span class="stat__icon stat__icon--warning" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M10.6 3.9 2.9 17.4A1.6 1.6 0 0 0 4.3 19.8h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 3.9a1.6 1.6 0 0 0-2.8 0Z" stroke-linejoin="round"/>
+            <path d="M12 8.5v5" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= nonCompliant %></span>
+        <span class="stat__label">Non conformes médicalement</span>
+      </article>
 
-            <p>
-                <strong>Activité :</strong>
-                <%= registration.activity_name %>
-            </p>
+      <article class="stat">
+        <span class="stat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="8.5"/>
+            <path d="M12 8v4.3l3 2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="stat__value"><%= fmtPrice(totalCollected) %></span>
+        <span class="stat__label">Encaissé (confirmées)</span>
+      </article>
 
-            <p>
-                <strong>Prix :</strong>
-                <%= registration.final_price %> €
-            </p>
+    </section>
 
-            <p>
-                <strong>Paiement :</strong>
-                <%= registration.payment_plan %>
-            </p>
+    <!-- ===================== RECHERCHE ET FILTRES ==================== -->
+    <!-- Recherche et filtre réalisés dans le navigateur : aucune requête au serveur. -->
+    <section class="panel filters" aria-labelledby="filters-title">
+      <h2 class="visually-hidden" id="filters-title">Rechercher une inscription</h2>
 
-            <p>
-                <strong>Statut :</strong>
-                <%= registration.status %>
-            </p>
+      <div class="filters__grid">
 
-            <hr>
+        <div class="field field--search">
+          <label for="filter-search">Rechercher</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/>
+            </svg>
+            <input type="search" id="filter-search" autocomplete="off" placeholder="Membre ou activité">
+          </div>
+        </div>
 
-        </article>
+        <% if (distinctStatuses.length > 0) { %>
+          <div class="field">
+            <label for="filter-status">Statut</label>
+            <select id="filter-status">
+              <option value="">Tous</option>
+              <% distinctStatuses.forEach(s => { %>
+                <option value="<%= s %>"><%= statusLabel(s) %></option>
+              <% }); %>
+            </select>
+          </div>
+        <% } %>
 
-    <% }); %>
+        <div class="filters__buttons">
+          <button type="button" class="btn btn--ghost" id="filters-reset">Réinitialiser</button>
+        </div>
 
+      </div>
+    </section>
+
+    <!-- ======================= LISTE DES INSCRIPTIONS ================= -->
+    <section class="panel table-panel" aria-labelledby="list-title">
+
+      <div class="table-panel__head">
+        <h2 id="list-title" class="table-panel__title">Registre des inscriptions</h2>
+        <p class="table-panel__count" id="result-count" aria-live="polite">
+          <%= total %> inscription<%= total > 1 ? 's' : '' %>
+        </p>
+      </div>
+
+      <% if (registrationList.length === 0) { %>
+
+        <div class="empty">
+          <p class="empty__title">Aucune inscription enregistrée.</p>
+          <p class="empty__text">Créez une inscription pour l’ajouter au registre.</p>
+        </div>
+
+      <% } else { %>
+
+        <div class="table-scroll">
+          <table class="table" id="registrations-table">
+            <caption class="visually-hidden">Inscriptions : membre, activité, prix, modalité de paiement et statut</caption>
+            <thead>
+              <tr>
+                <th scope="col">Membre</th>
+                <th scope="col">Activité</th>
+                <th scope="col">Prix</th>
+                <th scope="col">Modalité</th>
+                <th scope="col">Statut</th>
+                <th scope="col" class="col-actions">Détail</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% registrationList.forEach(reg => { %>
+              <tr class="rrow"
+                  data-member="<%= reg.first_name %> <%= reg.last_name %>"
+                  data-activity="<%= reg.activity_name %>"
+                  data-status="<%= reg.status || '' %>">
+
+                <td data-label="Membre"><span class="cell-title"><%= reg.first_name %> <%= reg.last_name %></span></td>
+
+                <td data-label="Activité"><%= reg.activity_name %></td>
+
+                <td data-label="Prix" class="num"><%= fmtPrice(reg.final_price) %></td>
+
+                <td data-label="Modalité"><%= fmtPaymentPlan(reg.payment_plan) %></td>
+
+                <td data-label="Statut">
+                  <span class="badge <%= statusClass(reg.status) %>"><%= statusLabel(reg.status) %></span>
+                </td>
+
+                <td data-label="Détail" class="col-actions">
+                  <button type="button" class="iconbtn"
+                          aria-label="Voir le détail de l’inscription de <%= reg.first_name %> <%= reg.last_name %>" title="Voir"
+                          data-modal-open="modal-view"
+                          data-member="<%= reg.first_name %> <%= reg.last_name %>"
+                          data-activity="<%= reg.activity_name %>"
+                          data-price="<%= fmtPrice(reg.final_price) %>"
+                          data-plan="<%= fmtPaymentPlan(reg.payment_plan) %>"
+                          data-status_label="<%= statusLabel(reg.status) %>"
+                          data-status_class="<%= statusClass(reg.status) %>">
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                      <path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/>
+                      <circle cx="12" cy="12" r="2.8"/>
+                    </svg>
+                    <span class="iconbtn__text">Voir</span>
+                  </button>
+                </td>
+              </tr>
+            <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="empty empty--inline" id="no-match" hidden>
+          <span class="empty__title">Aucune inscription ne correspond à cette recherche.</span>
+        </p>
+
+      <% } %>
+    </section>
+
+    <p class="page-footnote">
+      Pas de bouton Modifier ou Supprimer : ces actions ne sont pas encore prises en charge par le serveur.
+    </p>
+
+  </div>
+</main>
+
+
+<!-- =================== MODALE « NOUVELLE INSCRIPTION » ================ -->
+<dialog class="modal modal--form" id="modal-create" aria-labelledby="modal-create-title">
+  <form method="POST" action="/registrations" class="modal__form" novalidate>
+
+    <header class="modal__head">
+      <div>
+        <h2 class="modal__title" id="modal-create-title">Nouvelle inscription</h2>
+        <p class="modal__sub">Associez un membre à une activité.</p>
+      </div>
+      <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+      <fieldset class="fset">
+        <legend class="fset__legend">Membre et activité</legend>
+        <div class="grid grid--1">
+
+          <div class="field">
+            <label for="create-member_id">Membre</label>
+            <select id="create-member_id" name="member_id" required>
+              <option value="">Sélectionner un membre</option>
+              <% memberList.forEach(m => { %>
+                <option value="<%= m.id %>"><%= m.first_name %> <%= m.last_name %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="create-activity_id">Activité</label>
+            <select id="create-activity_id" name="activity_id" required>
+              <option value="">Sélectionner une activité</option>
+              <% activityList.forEach(a => { %>
+                <option value="<%= a.id %>"><%= activityOptionLabel(a) %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="create-payment_plan">Modalité de paiement</label>
+            <input type="text" id="create-payment_plan" name="payment_plan" value="1x" required maxlength="10">
+            <p class="field__hint">Exemple : 1x.</p>
+          </div>
+
+        </div>
+      </fieldset>
+
+      <p class="modal__info">
+        Si la capacité de l’activité est atteinte, le membre sera automatiquement placé en liste d’attente.
+      </p>
+    </div>
+
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Annuler</button>
+      <button type="submit" class="btn btn--primary">Créer l’inscription</button>
+    </footer>
+
+  </form>
+</dialog>
+
+
+<!-- ===================== MODALE DÉTAIL (lecture) =================== -->
+<dialog class="modal modal--view" id="modal-view" aria-labelledby="modal-view-title">
+  <header class="modal__head">
+    <div>
+      <h2 class="modal__title" id="modal-view-title">Détail de l’inscription</h2>
+      <p class="modal__sub" id="view-member">—</p>
+    </div>
+    <button type="button" class="modal__close" data-modal-close aria-label="Fermer la fenêtre">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="modal__body">
+    <dl class="detail">
+      <div><dt>Activité</dt><dd id="view-activity">—</dd></div>
+      <div><dt>Prix</dt><dd id="view-price">—</dd></div>
+      <div><dt>Modalité de paiement</dt><dd id="view-plan">—</dd></div>
+      <div><dt>Statut</dt><dd id="view-status"><span class="badge" id="view-status-badge">—</span></dd></div>
+    </dl>
+  </div>
+
+  <footer class="modal__foot">
+    <button type="button" class="btn btn--ghost" data-modal-close>Fermer</button>
+  </footer>
+</dialog>
+
+<script src="/js/registrations.js" defer></script>
 </body>
-
 </html>

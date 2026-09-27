@@ -179,4 +179,22 @@
       if (search) search.focus();
     });
   }
+    /* --------- Validation âge création ---------- */
+
+  var createForm = document.querySelector('#modal-create form');
+
+  if (createForm) {
+    createForm.addEventListener('submit', function (event) {
+      var minAge = Number(document.getElementById('create-min_age').value);
+      var maxAge = Number(document.getElementById('create-max_age').value);
+
+      if (maxAge < minAge) {
+        event.preventDefault();
+
+        alert(
+          "L'âge maximum doit être supérieur ou égal à l'âge minimum."
+        );
+      }
+    });
+  }
 })();

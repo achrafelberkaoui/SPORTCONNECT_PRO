@@ -1,100 +1,1170 @@
+<%
+/* =========================================================
+   WAITING LIST - HELPERS
+========================================================= */
+
+const list = Array.isArray(waitingList) ? waitingList : [];
+
+const currentActivityId = activityId || '';
+
+const totalWaiting = list.filter(item =>
+    item.status === 'waiting'
+).length;
+
+const totalPending = list.filter(item =>
+    item.status === 'promoted_pending'
+).length;
+
+const totalConfirmed = list.filter(item =>
+    item.status === 'confirmed'
+).length;
+
+const totalMembers = list.length;
+
+function getFullName(member) {
+    return `${member.first_name || ''} ${member.last_name || ''}`.trim();
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        waiting: 'En attente',
+        promoted_pending: 'Promotion en attente',
+        confirmed: 'Confirmé',
+        expired: 'Expiré',
+        cancelled: 'Annulé'
+    };
+
+    return labels[status] || status;
+}
+
+function getStatusClass(status) {
+    const classes = {
+        waiting: 'status-waiting',
+        promoted_pending: 'status-pending',
+        confirmed: 'status-confirmed',
+        expired: 'status-expired',
+        cancelled: 'status-cancelled'
+    };
+
+    return classes[status] || '';
+}
+
+function formatDate(date) {
+    if (!date) return '-';
+
+    return new Date(date).toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+function formatDateTime(date) {
+    if (!date) return '-';
+
+    return new Date(date).toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function getPosition(index) {
+    return index + 1;
+}
+
+function getPriorityLabel(score) {
+    if (Number(score) >= 10) {
+        return 'Prioritaire';
+    }
+
+    return 'Standard';
+}
+%>
+
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
-    <title>Liste d'attente</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Liste d'attente | SportConnect Pro</title>
+
+    <link
+        rel="stylesheet"
+        href="/css/waiting-list.css"
+    >
+
 </head>
 
 <body>
 
-    <h1>Liste d'attente</h1>
+<div class="app">
 
-    <% if (waitingList.length === 0) { %>
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
 
-        <p>Aucune personne en attente.</p>
+    <aside class="sidebar">
 
-    <% } else { %>
+        <div class="brand">
 
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Position</th>
-                    <th>Membre</th>
-                    <th>Priorité</th>
-                    <th>Statut</th>
-                    <th>Date limite</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+            <div class="brand-logo">
+                SC
+            </div>
 
-            <tbody>
+            <div class="brand-text">
+                <h2>SportConnect</h2>
+                <span>PRO</span>
+            </div>
 
-                <% waitingList.forEach((waiting, index) => { %>
+        </div>
 
-                    <tr>
-                        <td>
-                            <%= index + 1 %>
-                        </td>
 
-                        <td>
-                            <%= waiting.first_name %>
-                            <%= waiting.last_name %>
-                        </td>
+        <nav class="sidebar-nav">
 
-                        <td>
-                            <%= waiting.priority_score %>
-                        </td>
+            <div class="nav-section">
 
-                        <td>
-                            <%= waiting.status %>
-                        </td>
+                <p class="nav-title">
+                    PRINCIPAL
+                </p>
 
-                        <td>
-                            <%= waiting.deadline_confirmation || '-' %>
-                        </td>
+                <a href="/dashboard" class="nav-item">
 
-                        <td>
+                    <span class="nav-icon">⌂</span>
 
-                            <% if (waiting.status === 'promoted_pending') { %>
+                    <span>
+                        Dashboard
+                    </span>
 
-                                <form
-                                    method="POST"
-                                    action="/waiting-list/confirm"
+                </a>
+
+            </div>
+
+
+            <div class="nav-section">
+
+                <p class="nav-title">
+                    GESTION
+                </p>
+
+                <a href="/activities" class="nav-item">
+
+                    <span class="nav-icon">◈</span>
+
+                    <span>
+                        Activités
+                    </span>
+
+                </a>
+
+
+                <a href="/facilities" class="nav-item">
+
+                    <span class="nav-icon">▦</span>
+
+                    <span>
+                        Infrastructures
+                    </span>
+
+                </a>
+
+
+                <a href="/associations" class="nav-item">
+
+                    <span class="nav-icon">♙</span>
+
+                    <span>
+                        Associations
+                    </span>
+
+                </a>
+
+
+                <a href="/members" class="nav-item">
+
+                    <span class="nav-icon">♙</span>
+
+                    <span>
+                        Membres
+                    </span>
+
+                </a>
+
+
+                <a href="/families" class="nav-item">
+
+                    <span class="nav-icon">⌂</span>
+
+                    <span>
+                        Familles
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <div class="nav-section">
+
+                <p class="nav-title">
+                    INSCRIPTIONS
+                </p>
+
+
+                <a href="/registrations" class="nav-item">
+
+                    <span class="nav-icon">✓</span>
+
+                    <span>
+                        Inscriptions
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/waiting-list"
+                    class="nav-item active"
+                >
+
+                    <span class="nav-icon">☷</span>
+
+                    <span>
+                        Liste d'attente
+                    </span>
+
+                    <% if (totalWaiting > 0) { %>
+
+                        <span class="nav-badge">
+                            <%= totalWaiting %>
+                        </span>
+
+                    <% } %>
+
+                </a>
+
+            </div>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <div>
+
+                    <strong>
+                        Système opérationnel
+                    </strong>
+
+                    <small>
+                        SportConnect Pro
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <span class="breadcrumb">
+                    Gestion
+                </span>
+
+                <span class="breadcrumb-separator">
+                    /
+                </span>
+
+                <span class="breadcrumb-current">
+                    Liste d'attente
+                </span>
+
+            </div>
+
+
+            <div class="topbar-actions">
+
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="refreshBtn"
+                    title="Actualiser"
+                >
+                    ↻
+                </button>
+
+
+                <div class="user-profile">
+
+                    <div class="user-avatar">
+                        A
+                    </div>
+
+                    <div class="user-info">
+
+                        <strong>
+                            Administrateur
+                        </strong>
+
+                        <span>
+                            Gestionnaire
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- CONTENT -->
+
+        <section class="content">
+
+
+            <!-- PAGE HEADER -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <div class="eyebrow">
+                        INSCRIPTIONS
+                    </div>
+
+                    <h1>
+                        Liste d'attente
+                    </h1>
+
+                    <p>
+                        Gérez les membres en attente d'une place
+                        pour cette activité.
+                    </p>
+
+                </div>
+
+
+                <div class="header-actions">
+
+                    <% if (currentActivityId) { %>
+
+                        <a
+                            href="/activities/<%= currentActivityId %>"
+                            class="btn btn-secondary"
+                        >
+                            ← Retour à l'activité
+                        </a>
+
+                    <% } %>
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="refreshPageBtn"
+                    >
+                        ↻ Actualiser
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATISTICS
+            ================================================== -->
+
+            <div class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon blue">
+                        ☷
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span>
+                            Total en attente
+                        </span>
+
+                        <strong>
+                            <%= totalMembers %>
+                        </strong>
+
+                        <small>
+                            membres
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon orange">
+                        ◷
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span>
+                            En attente
+                        </span>
+
+                        <strong>
+                            <%= totalWaiting %>
+                        </strong>
+
+                        <small>
+                            demandes actives
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon purple">
+                        ↑
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span>
+                            Promotion en attente
+                        </span>
+
+                        <strong>
+                            <%= totalPending %>
+                        </strong>
+
+                        <small>
+                            confirmation requise
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon green">
+                        ✓
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span>
+                            Confirmés
+                        </span>
+
+                        <strong>
+                            <%= totalConfirmed %>
+                        </strong>
+
+                        <small>
+                            demandes confirmées
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FILTERS
+            ================================================== -->
+
+            <div class="filters-card">
+
+                <div class="filters-left">
+
+                    <div class="search-box">
+
+                        <span class="search-icon">
+                            ⌕
+                        </span>
+
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Rechercher un membre..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <select
+                        id="statusFilter"
+                        class="filter-select"
+                    >
+
+                        <option value="all">
+                            Tous les statuts
+                        </option>
+
+                        <option value="waiting">
+                            En attente
+                        </option>
+
+                        <option value="promoted_pending">
+                            Promotion en attente
+                        </option>
+
+                        <option value="confirmed">
+                            Confirmé
+                        </option>
+
+                        <option value="expired">
+                            Expiré
+                        </option>
+
+                        <option value="cancelled">
+                            Annulé
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="results-count">
+
+                    <span id="visibleCount">
+                        <%= totalMembers %>
+                    </span>
+
+                    résultat(s)
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 TABLE
+            ================================================== -->
+
+            <div class="table-card">
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            Membres en attente
+                        </h2>
+
+                        <p>
+                            Les membres sont classés selon leur
+                            priorité puis leur date d'inscription.
+                        </p>
+
+                    </div>
+
+
+                    <div class="queue-info">
+
+                        <span class="queue-dot"></span>
+
+                        File active
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table id="waitingTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Position
+                                </th>
+
+                                <th>
+                                    Membre
+                                </th>
+
+                                <th>
+                                    Activité
+                                </th>
+
+                                <th>
+                                    Priorité
+                                </th>
+
+                                <th>
+                                    Inscription
+                                </th>
+
+                                <th>
+                                    Statut
+                                </th>
+
+                                <th>
+                                    Confirmation
+                                </th>
+
+                                <th>
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                        <% if (list.length === 0) { %>
+
+                            <tr>
+
+                                <td
+                                    colspan="8"
+                                    class="empty-cell"
                                 >
 
-                                    <input
-                                        type="hidden"
-                                        name="waiting_list_id"
-                                        value="<%= waiting.id %>"
+                                    <div class="empty-state">
+
+                                        <div class="empty-icon">
+                                            ✓
+                                        </div>
+
+                                        <h3>
+                                            Liste d'attente vide
+                                        </h3>
+
+                                        <p>
+                                            Aucun membre n'est actuellement
+                                            en attente pour cette activité.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <% } %>
+
+
+                        <% list.forEach((item, index) => { %>
+
+                            <tr
+                                class="waiting-row"
+                                data-status="<%= item.status %>"
+                                data-member="<%= getFullName(item).toLowerCase() %>"
+                            >
+
+                                <!-- POSITION -->
+
+                                <td>
+
+                                    <div class="position">
+
+                                        <span class="position-number">
+                                            #<%= getPosition(index) %>
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- MEMBER -->
+
+                                <td>
+
+                                    <div class="member-cell">
+
+                                        <div class="member-avatar">
+
+                                            <%= (item.first_name || '?')
+                                                .charAt(0)
+                                                .toUpperCase() %>
+
+                                        </div>
+
+                                        <div class="member-info">
+
+                                            <strong>
+                                                <%= getFullName(item) %>
+                                            </strong>
+
+                                            <span>
+                                                ID membre #<%= item.member_id %>
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ACTIVITY -->
+
+                                <td>
+
+                                    <span class="activity-id">
+                                        #<%= item.activity_id %>
+                                    </span>
+
+                                </td>
+
+
+                                <!-- PRIORITY -->
+
+                                <td>
+
+                                    <div class="priority-cell">
+
+                                        <span class="priority-score">
+
+                                            <%= item.priority_score %>
+
+                                        </span>
+
+                                        <span
+                                            class="priority-label
+                                            <%= Number(item.priority_score) >= 10
+                                                ? 'priority-high'
+                                                : 'priority-normal' %>"
+                                        >
+
+                                            <%= getPriorityLabel(
+                                                item.priority_score
+                                            ) %>
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CREATED -->
+
+                                <td>
+
+                                    <div class="date-cell">
+
+                                        <strong>
+                                            <%= formatDate(item.created_at) %>
+                                        </strong>
+
+                                        <span>
+                                            <%= new Date(item.created_at)
+                                                .toLocaleTimeString(
+                                                    'fr-FR',
+                                                    {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }
+                                                ) %>
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    <span
+                                        class="status-badge <%= getStatusClass(item.status) %>"
                                     >
 
-                                    <button type="submit">
-                                        Confirmer
-                                    </button>
+                                        <span class="status-dot"></span>
 
-                                </form>
+                                        <%= getStatusLabel(item.status) %>
 
-                            <% } else { %>
+                                    </span>
 
-                                -
+                                </td>
 
-                            <% } %>
 
-                        </td>
-                    </tr>
+                                <!-- DEADLINE -->
 
-                <% }); %>
+                                <td>
 
-            </tbody>
-        </table>
+                                    <% if (
+                                        item.status === 'promoted_pending'
+                                        && item.deadline_confirmation
+                                    ) { %>
 
-    <% } %>
+                                        <div
+                                            class="deadline"
+                                            data-deadline="<%= item.deadline_confirmation %>"
+                                        >
 
-    <br>
+                                            <strong class="countdown">
+                                                Calcul...
+                                            </strong>
 
-    <a href="/registrations">
-        Retour aux inscriptions
-    </a>
+                                            <span>
+                                                Jusqu'au
+                                                <%= formatDateTime(
+                                                    item.deadline_confirmation
+                                                ) %>
+                                            </span>
+
+                                        </div>
+
+                                    <% } else if (
+                                        item.status === 'waiting'
+                                    ) { %>
+
+                                        <span class="not-applicable">
+                                            —
+                                        </span>
+
+                                    <% } else { %>
+
+                                        <span class="not-applicable">
+                                            —
+                                        </span>
+
+                                    <% } %>
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="actions">
+
+                                        <% if (
+                                            item.status === 'promoted_pending'
+                                        ) { %>
+
+                                            <form
+                                                method="POST"
+                                                action="/waiting-list/confirm"
+                                                class="confirm-form"
+                                            >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="waiting_list_id"
+                                                    value="<%= item.id %>"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="action-btn confirm-btn"
+                                                    title="Confirmer"
+                                                >
+                                                    ✓
+                                                </button>
+
+                                            </form>
+
+                                        <% } %>
+
+
+                                        <button
+                                            type="button"
+                                            class="action-btn details-btn"
+                                            data-member="<%= getFullName(item) %>"
+                                            data-member-id="<%= item.member_id %>"
+                                            data-activity-id="<%= item.activity_id %>"
+                                            data-priority="<%= item.priority_score %>"
+                                            data-status="<%= getStatusLabel(item.status) %>"
+                                            data-created="<%= formatDateTime(item.created_at) %>"
+                                            title="Voir les détails"
+                                        >
+                                            ⓘ
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <% }) %>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 LEGEND
+            ================================================== -->
+
+            <div class="legend-card">
+
+                <div class="legend-title">
+                    <span>ℹ</span>
+                    Fonctionnement de la liste d'attente
+                </div>
+
+
+                <div class="legend-items">
+
+                    <div class="legend-item">
+
+                        <span class="legend-dot orange"></span>
+
+                        <div>
+
+                            <strong>
+                                En attente
+                            </strong>
+
+                            <span>
+                                Le membre attend qu'une place se libère.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span class="legend-dot purple"></span>
+
+                        <div>
+
+                            <strong>
+                                Promotion en attente
+                            </strong>
+
+                            <span>
+                                Une place est disponible. Le membre dispose
+                                de 48h pour confirmer.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span class="legend-dot green"></span>
+
+                        <div>
+
+                            <strong>
+                                Confirmé
+                            </strong>
+
+                            <span>
+                                La promotion a été confirmée.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     DETAILS MODAL
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="detailsModal"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-eyebrow">
+                    LISTE D'ATTENTE
+                </span>
+
+                <h2>
+                    Détails du membre
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeModal"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="modal-member">
+
+                <div
+                    class="modal-avatar"
+                    id="modalAvatar"
+                >
+                    A
+                </div>
+
+                <div>
+
+                    <h3 id="modalMemberName">
+                        —
+                    </h3>
+
+                    <span id="modalMemberId">
+                        —
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="details-grid">
+
+                <div class="detail-item">
+
+                    <span>
+                        Activité
+                    </span>
+
+                    <strong id="modalActivity">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Priorité
+                    </span>
+
+                    <strong id="modalPriority">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Statut
+                    </span>
+
+                    <strong id="modalStatus">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Date d'inscription
+                    </span>
+
+                    <strong id="modalCreated">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="closeModalBtn"
+            >
+                Fermer
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="/js/waiting-list.js"></script>
 
 </body>
+
 </html>
