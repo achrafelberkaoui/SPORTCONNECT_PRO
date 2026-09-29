@@ -1,97 +1,116 @@
-const render = require('../utils/renderer');
-const activityService = require('../services/activityService');
+const render = require("../utils/renderer");
+const activityService = require("../services/activityService");
 
 function isoDate(date) {
-    return new Date(date).toISOString().split('T')[0];
+  return new Date(date).toISOString().split("T")[0];
 }
 
 function fmtPrice(price) {
-    return `${Number(price).toFixed(2)} DH`;
+  return `${Number(price).toFixed(2)} DH`;
 }
 
 function fmtDate(date) {
-    return new Date(date).toLocaleDateString('fr-FR');
+  return new Date(date).toLocaleDateString("fr-FR");
 }
 
 function isToday(date) {
-    return isoDate(date) === isoDate(new Date());
+  return isoDate(date) === isoDate(new Date());
 }
 
 function fmtTime(time) {
-    if (!time) return '';
-    return String(time).slice(0, 5);
+  if (!time) return "";
+  return String(time).slice(0, 5);
 }
 
-
 async function index(req, res) {
-    try {
-        const activities = await activityService.getAllActivities();
-        const formData = await activityService.getActivityFormData();
+  try {
+    const activities = await activityService.getAllActivities();
+    const formData = await activityService.getActivityFormData();
 
-        const totalActivities = activities.length;
+    const totalActivities = activities.length;
 
-        const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
 
-        const todayActivities = activities.filter(activity => {
-            return String(activity.activity_date).slice(0, 10) === today;
-        }).length;
+    const todayActivities = activities.filter((activity) => {
+      return String(activity.activity_date).slice(0, 10) === today;
+    }).length;
 
-        const totalCapacity = activities.reduce((total, activity) => {
-            return total + Number(activity.max_capacity || 0);
-        }, 0);
+    const totalCapacity = activities.reduce((total, activity) => {
+      return total + Number(activity.max_capacity || 0);
+    }, 0);
 
-        const usedFacilities = new Set(
-            activities.map(activity => activity.facility_id)
-        ).size;
+    const usedFacilities = new Set(
+      activities.map((activity) => activity.facility_id),
+    ).size;
 
-        render(res, 'activities', {
-            activities,
-            associations: formData.associations,
-            facilities: formData.facilities,
+    render(res, "activities", {
+      activities,
+      associations: formData.associations,
+      facilities: formData.facilities,
 
-            totalActivities,
-            todayActivities,
-            totalCapacity,
-            usedFacilities,
+      totalActivities,
+      todayActivities,
+      totalCapacity,
+      usedFacilities,
 
-            // Helpers utilisés par activities.ejs
-            isoDate,
-            fmtPrice,
-            fmtDate,
-            isToday,
-            fmtTime
-        });
+      // Helpers utilisés par activities.ejs
+      isoDate,
+      fmtPrice,
+      fmtDate,
+      isToday,
+      fmtTime,
+    });
+  } catch (error) {
+    console.error(error);
 
-    } catch (error) {
-        console.error(error);
-
-        if (!res.headersSent) {
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end('Erreur serveur');
-        }
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader("Content-Type", "text/plain");
+      res.end("Erreur serveur");
     }
+  }
 }
 
 async function create(req, res) {
-    try {
-        const {name,base_price,max_capacity,activity_date,start_time,end_time,min_age,max_age,all_publics,association_id,facility_id} = req.body;
+  try {
+    const {
+      name,
+      base_price,
+      max_capacity,
+      activity_date,
+      start_time,
+      end_time,
+      min_age,
+      max_age,
+      all_publics,
+      association_id,
+      facility_id,
+    } = req.body;
 
-        await activityService.createActivity(name,Number(base_price),Number(max_capacity),activity_date,start_time,end_time,Number(min_age)
-        ,Number(max_age),all_publics === 'on',Number(association_id),Number(facility_id));
+    await activityService.createActivity(
+      name,
+      Number(base_price),
+      Number(max_capacity),
+      activity_date,
+      start_time,
+      end_time,
+      Number(min_age),
+      Number(max_age),
+      all_publics === "on",
+      Number(association_id),
+      Number(facility_id),
+    );
 
-        res.statusCode = 302;
-        res.setHeader('Location', '/activities');
-        res.end();
+    res.statusCode = 302;
+    res.setHeader("Location", "/activities");
+    res.end();
+  } catch (error) {
+    console.error("ERREUR INSCRIPTION :", error);
 
-    } catch (error) {
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
 
-        console.error('ERREUR INSCRIPTION :', error);
-
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-        res.end(`
+    res.end(`
             <!DOCTYPE html>
             <html lang="fr">
             <head>
@@ -118,76 +137,97 @@ async function create(req, res) {
             </body>
             </html>
         `);
-    }
+  }
 }
 
 async function update(req, res) {
-    try {
-        const {
-            id,
-            name,
-            base_price,
-            max_capacity,
-            activity_date,
-            start_time,
-            end_time,
-            min_age,
-            max_age,
-            all_publics,
-            association_id,
-            facility_id
-        } = req.body;
+  try {
+    const {
+      id,
+      name,
+      base_price,
+      max_capacity,
+      activity_date,
+      start_time,
+      end_time,
+      min_age,
+      max_age,
+      all_publics,
+      association_id,
+      facility_id,
+    } = req.body;
 
-        await activityService.updateActivity(
-            Number(id),
-            name,
-            Number(base_price),
-            Number(max_capacity),
-            activity_date,
-            start_time,
-            end_time,
-            Number(min_age),
-            Number(max_age),
-            all_publics === 'on',
-            Number(association_id),
-            Number(facility_id)
-        );
+    await activityService.updateActivity(
+      Number(id),
+      name,
+      Number(base_price),
+      Number(max_capacity),
+      activity_date,
+      start_time,
+      end_time,
+      Number(min_age),
+      Number(max_age),
+      all_publics === "on",
+      Number(association_id),
+      Number(facility_id),
+    );
 
-        res.statusCode = 302;
-        res.setHeader('Location', '/activities');
-        res.end();
+    res.statusCode = 302;
+    res.setHeader("Location", "/activities");
+    res.end();
+  } catch (error) {
+    console.error(error);
 
-    } catch (error) {
-        console.error(error);
-
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end(error.message);
-    }
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "text/plain");
+    res.end(error.message);
+  }
 }
 
 async function remove(req, res) {
-    try {
-        const { id } = req.body;
+  try {
+    const { id } = req.body;
 
-        await activityService.deleteActivity(Number(id));
+    await activityService.deleteActivity(Number(id));
 
-        res.statusCode = 302;
-        res.setHeader('Location', '/activities');
-        res.end();
+    res.statusCode = 302;
+    res.setHeader("Location", "/activities");
+    res.end();
+  } catch (error) {
+    console.error(error);
 
-    } catch (error) {
-        console.error(error);
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "text/plain");
+    res.end("Erreur serveur");
+  }
+}
 
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('Erreur serveur');
+async function getJson(req, res, params) {
+  console.log(params.id);
+  try {
+    const result = await activityService.getParActivityId(params.id);
+    console.log(result);
+
+    if (result) {
+      res.status = 302;
+      res.setHeader("content", "text/plain");
+      console.log(result);
+      res.end();
     }
+  
+  } catch (error) {
+    console.log(error);
+
+    res.statusCode = 404;
+    res.setHeader("Content-Type", "text/plain");
+    res.end("error id");
+  }
 }
 
 module.exports = {
-    index,
-    create,
-    update,
-    remove
+  index,
+  create,
+  update,
+  remove,
+  getJson,
 };

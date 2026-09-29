@@ -1,9 +1,8 @@
-const pool = require('../config/db');
-const scheduleService = require('./scheduleService');
+const pool = require("../config/db");
+const scheduleService = require("./scheduleService");
 
 async function getAllActivities() {
-
-    const result = await pool.query(`
+  const result = await pool.query(`
         SELECT
             activities.id,
             activities.name,
@@ -28,67 +27,74 @@ async function getAllActivities() {
                  activities.start_time
     `);
 
-    return result.rows;
+  return result.rows;
 }
 
 async function checkErpCapacity(facilityId, maxCapacity) {
-
-    const result = await pool.query(
-        `SELECT erp_capacity
+  const result = await pool.query(
+    `SELECT erp_capacity
          FROM facilities
          WHERE id = $1`,
-        [facilityId]
+    [facilityId],
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error("Infrastructure introuvable");
+  }
+
+  const erpCapacity = result.rows[0].erp_capacity;
+
+  if (maxCapacity > erpCapacity) {
+    throw new Error(
+      `La capacité de l'activité (${maxCapacity}) ` +
+        `dépasse la capacité ERP (${erpCapacity})`,
     );
+  }
+}
 
-    if (result.rows.length === 0) {
-        throw new Error('Infrastructure introuvable');
-    }
+async function getParActivityId(id) {
+  const result = await pool.query(
+    `
+    SELECT * 
+    FROM activities 
+    WHERE id = $1`,
+    [id],
+  );
 
-    const erpCapacity = result.rows[0].erp_capacity;
-
-    if (maxCapacity > erpCapacity) {
-        throw new Error(
-            `La capacité de l'activité (${maxCapacity}) ` +
-            `dépasse la capacité ERP (${erpCapacity})`
-        );
-    }
+  console.log(result);
+  if (result.rows.length == 0) throw new Error("error id");
+  console.log("bjkfbjskdfbkjsdfbskjdbsjk");
+  return result.rows[0];
 }
 
 async function createActivity(
-    name,
-    basePrice,
-    maxCapacity,
+  name,
+  basePrice,
+  maxCapacity,
+  activityDate,
+  startTime,
+  endTime,
+  minAge,
+  maxAge,
+  allPublics,
+  associationId,
+  facilityId,
+) {
+  await checkErpCapacity(facilityId, maxCapacity);
+
+  const conflicts = await scheduleService.checkScheduleConflict(
+    facilityId,
     activityDate,
     startTime,
     endTime,
-    minAge,
-    maxAge,
-    allPublics,
-    associationId,
-    facilityId
-) {
+  );
 
-    await checkErpCapacity(
-        facilityId,
-        maxCapacity
-    );
+  if (conflicts.length > 0) {
+    throw new Error("Cette infrastructure est déjà occupée sur ce créneau");
+  }
 
-    const conflicts =
-        await scheduleService.checkScheduleConflict(
-            facilityId,
-            activityDate,
-            startTime,
-            endTime
-        );
-
-    if (conflicts.length > 0) {
-        throw new Error(
-            'Cette infrastructure est déjà occupée sur ce créneau'
-        );
-    }
-
-    const result = await pool.query(
-        `INSERT INTO activities (
+  const result = await pool.query(
+    `INSERT INTO activities (
             name,
             base_price,
             max_capacity,
@@ -106,61 +112,54 @@ async function createActivity(
             $6, $7, $8, $9, $10, $11
         )
         RETURNING *`,
-        [
-            name,
-            basePrice,
-            maxCapacity,
-            activityDate,
-            startTime,
-            endTime,
-            minAge,
-            maxAge,
-            allPublics,
-            associationId,
-            facilityId
-        ]
-    );
+    [
+      name,
+      basePrice,
+      maxCapacity,
+      activityDate,
+      startTime,
+      endTime,
+      minAge,
+      maxAge,
+      allPublics,
+      associationId,
+      facilityId,
+    ],
+  );
 
-    return result.rows[0];
+  return result.rows[0];
 }
 
 async function updateActivity(
-    id,
-    name,
-    basePrice,
-    maxCapacity,
+  id,
+  name,
+  basePrice,
+  maxCapacity,
+  activityDate,
+  startTime,
+  endTime,
+  minAge,
+  maxAge,
+  allPublics,
+  associationId,
+  facilityId,
+) {
+  await checkErpCapacity(facilityId, maxCapacity);
+
+  const conflicts = await scheduleService.checkScheduleConflict(
+    facilityId,
     activityDate,
     startTime,
     endTime,
-    minAge,
-    maxAge,
-    allPublics,
-    associationId,
-    facilityId
-) {
+    id,
+  );
 
-    await checkErpCapacity(
-        facilityId,
-        maxCapacity
-    );
+  if (conflicts.length > 0) {
+    throw new Error("Cette infrastructure est déjà occupée sur ce créneau");
+  }
 
-    const conflicts =
-        await scheduleService.checkScheduleConflict(
-            facilityId,
-            activityDate,
-            startTime,
-            endTime,
-            id
-        );
-
-    if (conflicts.length > 0) {
-        throw new Error(
-            'Cette infrastructure est déjà occupée sur ce créneau'
-        );
-    }
-
-    const result = await pool.query(
-        `UPDATE activities
+  const result = await pool.query(
+    `UPDATE activities
          SET
             name = $1,
             base_price = $2,
@@ -175,57 +174,57 @@ async function updateActivity(
             facility_id = $11
          WHERE id = $12
          RETURNING *`,
-        [
-            name,
-            basePrice,
-            maxCapacity,
-            activityDate,
-            startTime,
-            endTime,
-            minAge,
-            maxAge,
-            allPublics,
-            associationId,
-            facilityId,
-            id
-        ]
-    );
+    [
+      name,
+      basePrice,
+      maxCapacity,
+      activityDate,
+      startTime,
+      endTime,
+      minAge,
+      maxAge,
+      allPublics,
+      associationId,
+      facilityId,
+      id,
+    ],
+  );
 
-    return result.rows[0];
+  return result.rows[0];
 }
 
 async function deleteActivity(id) {
-
-    await pool.query(
-        `DELETE FROM activities
+  await pool.query(
+    `DELETE FROM activities
          WHERE id = $1`,
-        [id]
-    );
+    [id],
+  );
 }
 
 async function getActivityFormData() {
-    const associationsResult = await pool.query(`
+  const associationsResult = await pool.query(`
         SELECT id, name
         FROM associations
         ORDER BY name
     `);
 
-    const facilitiesResult = await pool.query(`
+  const facilitiesResult = await pool.query(`
         SELECT id, name, erp_capacity
         FROM facilities
         ORDER BY name
     `);
 
-    return {
-        associations: associationsResult.rows,
-        facilities: facilitiesResult.rows
-    };
+  return {
+    associations: associationsResult.rows,
+    facilities: facilitiesResult.rows,
+  };
 }
 
 module.exports = {
-    getAllActivities,
-    createActivity,
-    updateActivity,
-    deleteActivity,
-    getActivityFormData
+  getAllActivities,
+  createActivity,
+  updateActivity,
+  deleteActivity,
+  getActivityFormData,
+  getParActivityId,
 };
